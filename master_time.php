@@ -31,7 +31,6 @@ $TransMaterial = mysqli_query($conn,"
 </head>
 
 <body class="hold-transition sidebar-mini">
-
 <div class="wrapper">
 
   <!-- HEADER -->
@@ -66,9 +65,7 @@ $TransMaterial = mysqli_query($conn,"
               </li>
             </ol>
           </div>
-
         </div>
-
       </div>
     </section>
 
@@ -205,9 +202,7 @@ $TransMaterial = mysqli_query($conn,"
                       <td><?= $TMtr['hour']; ?></td>
                       <td><?= $TMtr['shift']; ?></td>
                     </tr>
-
                     <?php endforeach; ?>
-
                   </tbody>
                 </table>
 

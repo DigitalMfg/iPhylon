@@ -564,11 +564,14 @@ if (!isset($_SESSION['login'])) {
                                             🔴 NOT PRINT
 
                                         </option>
+
                                     </select>
+
                                 </div>
 
                                 <!-- SEARCH -->
                                 <div class="col-md-1 mb-2">
+
                                     <button
                                         type="submit"
                                         name="search"
@@ -576,30 +579,42 @@ if (!isset($_SESSION['login'])) {
 
                                         <i class="fas fa-search"></i>
                                         Search
+
                                     </button>
+
                                 </div>
 
                                 <!-- RESET -->
                                 <div class="col-md-1 mb-2">
+
                                     <a
                                         href="master_qrcode.php"
                                         class="btn btn-secondary btn-block">
 
                                         <i class="fas fa-sync"></i>
                                         Reset
+
                                     </a>
+
                                 </div>
+
                             </div>
+
                         </form>
+
                     </div>
+
                 </div>
 
                 <!-- TABLE -->
                 <div class="card card-success">
+
                     <div class="card-header">
+
                         <h3 class="card-title">
                             Data QR Code
                         </h3>
+
                     </div>
 
                     <form
@@ -607,11 +622,15 @@ if (!isset($_SESSION['login'])) {
                         action="print_multiple_qrcode.php">
 
                         <div class="card-body table-responsive">
+
                             <table
                                 id="example1"
                                 class="table table-bordered table-striped">
+
                                 <thead>
+
                                     <tr>
+
                                         <th width="50">No</th>
 
                                         <th width="50">
@@ -731,16 +750,19 @@ if (!isset($_SESSION['login'])) {
                                         <?php foreach($data as $d) : ?>
 
                                             <tr>
+
                                                 <td>
                                                     <?= $no++; ?>
                                                 </td>
 
                                                 <td>
+
                                                     <input
                                                         type="checkbox"
                                                         name="selected_qr[]"
                                                         value="<?= $d['id_size_qty']; ?>"
                                                         class="checkItem">
+
                                                 </td>
 
                                                 <td><?= $d['qr_code']; ?></td>
@@ -757,61 +779,88 @@ if (!isset($_SESSION['login'])) {
                                                 <td><?= $d['qty']; ?></td>
 
                                                 <td>
+
                                                     <?php if($d['status_print'] == "PRINT") : ?>
+
                                                         <span class="badge badge-success">
                                                             PRINT
                                                         </span>
+
                                                     <?php else : ?>
+
                                                         <span class="badge badge-danger">
                                                             NOT PRINT
                                                         </span>
 
                                                     <?php endif; ?>
+
                                                 </td>
+
                                             </tr>
+
                                         <?php endforeach; ?>
 
                                     <?php else : ?>
+
                                         <tr>
+
                                             <td
                                                 colspan="15"
                                                 class="text-center text-muted">
 
                                                 Silakan lakukan filter terlebih dahulu
+
                                             </td>
+
                                         </tr>
 
                                     <?php endif; ?>
+
                                 </tbody>
+
                             </table>
+
                         </div>
 
                         <div class="card-footer">
+
                             <button
                                 type="submit"
                                 class="btn btn-warning">
 
                                 <i class="fas fa-print"></i>
                                 Print Selected QR Code
+
                             </button>
+
                         </div>
+
                     </form>
+
                 </div>
+
             </div>
+
         </section>
+
     </div>
 
     <!-- FOOTER -->
     <footer class="main-footer">
+
         <div class="float-right d-none d-sm-block">
             <b>Version</b> 1.0.0
         </div>
+
         2026
         <strong>
             <a href="#">Mfg Project Officer</a>.
         </strong>
+
         All rights reserved.
+
     </footer>
+
 </div>
 
 <!-- jQuery -->
