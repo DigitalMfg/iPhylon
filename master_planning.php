@@ -716,6 +716,38 @@ async function printSingleQR(button)
         await generateQRLabel(row);
 
     openPrintWindow(label);
+
+    // AMBIL ID
+    let id = button.dataset.id;
+
+    // UPDATE STATUS PRINT
+    fetch('update_print_status.php', {
+
+        method: 'POST',
+
+        headers: {
+            'Content-Type':
+                'application/x-www-form-urlencoded'
+        },
+
+        body: 'id=' + id
+
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if(data.success)
+        {
+            button.disabled = true;
+
+            button.classList.remove('btn-success');
+
+            button.classList.add('btn-secondary');
+
+            button.innerHTML = 'Printed';
+        }
+
+    });
 }
 
 /* =========================================
