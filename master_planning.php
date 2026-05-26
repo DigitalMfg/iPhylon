@@ -453,14 +453,14 @@ $Planning = mysqli_query($conn,"
 
                             <?php
 
-// CEK APAKAH SUDAH GENERATE
-$checkGenerate = mysqli_query($conn,"
-    SELECT *
-    FROM tbl_master_barcode
-    WHERE no_jo = '".$Plan['no_jo']."'
-");
+            // CEK APAKAH SUDAH GENERATE
+            $checkGenerate = mysqli_query($conn,"
+                SELECT *
+                FROM tbl_master_barcode
+                WHERE no_jo = '".$Plan['no_jo']."'
+            ");
 
-$alreadyGenerate = mysqli_num_rows($checkGenerate);
+            $alreadyGenerate = mysqli_num_rows($checkGenerate);
 
 ?>
 
@@ -500,14 +500,47 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
         <td><?= $bundle['qty']; ?></td>
 
         <!-- QR -->
-        <td class="qr-value">
-            <?= $bundle['qr_code']; ?>
+        <td class="qr-value text-center"
+            data-qr="<?= $bundle['qr_code']; ?>">
+
+            <?php if(empty($bundle['qr_code'])) : ?>
+
+                <button type="button"
+                        class="btn btn-sm btn-danger"
+                        disabled>
+
+                    Belum Generate
+
+                </button>
+
+            <?php else : ?>
+
+                <?= $bundle['qr_code']; ?>
+
+            <?php endif; ?>
+
         </td>
 
         <!-- ACTION -->
         <td>
 
-            <?php if($bundle['status_print'] == 'NO') : ?>
+            <?php
+
+            $qr = trim($bundle['qr_code'] ?? '');
+
+            ?>
+
+            <?php if($qr == '') : ?>
+
+                <button type="button"
+                        class="btn btn-sm btn-danger"
+                        disabled>
+
+                    Can't Print
+
+                </button>
+
+            <?php elseif($bundle['status_print'] == 'NO') : ?>
 
                 <button type="button"
                         class="btn btn-sm btn-success btn-print"
@@ -570,25 +603,70 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
                       <td><?= $sz['qty']; ?></td>
 
                       <!-- QR -->
-                      <td>
+                      <td class="qr-value text-center"
+                            data-qr="<?= $bundle['qr_code']; ?>">
+
+                            <?php if(empty($bundle['qr_code'])) : ?>
+
+                                <button type="button"
+                                        class="btn btn-sm btn-danger"
+                                        disabled>
+
+                                    Not Generated
+
+                                </button>
+
+                            <?php else : ?>
+
+                                <?= $bundle['qr_code']; ?>
+
+                            <?php endif; ?>
+
+                        </td>
 
                       <!-- ACTION -->
                     <td>
 
-                        <button type="button"
-                                class="btn btn-sm btn-success"
-                                onclick="printSingleQR(this)">
+                        <?php
 
-                            Print
+                        $qr = trim($bundle['qr_code'] ?? '');
 
-                        </button>
+                        ?>
+
+                        <?php if($qr == '') : ?>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-danger"
+                                    disabled>
+
+                                Can't Print
+
+                            </button>
+
+                        <?php elseif($bundle['status_print'] == 'NO') : ?>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-success btn-print"
+                                    data-id="<?= $bundle['id_barcode']; ?>"
+                                    onclick="printSingleQR(this)">
+
+                                Print
+
+                            </button>
+
+                        <?php else : ?>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-secondary"
+                                    disabled>
+
+                                Printed
+
+                            </button>
+
+                        <?php endif; ?>
 
                     </td>
-
-                          <span class="badge badge-secondary">
-                              Belum Generate
-                          </span>
-                      </td>
                   </tr>
                   <?php endforeach; ?>
               <?php endforeach; ?>
@@ -715,37 +793,38 @@ async function printSingleQR(button)
     let label =
         await generateQRLabel(row);
 
-    openPrintWindow(label);
+    openPrintWindow(label, async function(){
 
-    // AMBIL ID
-    let id = button.dataset.id;
+        let id = button.dataset.id;
 
-    // UPDATE STATUS PRINT
-    fetch('update_print_status.php', {
+        // UPDATE DATABASE
+        await fetch(
+            'update_print_status.php',
+            {
 
-        method: 'POST',
+                method: 'POST',
 
-        headers: {
-            'Content-Type':
-                'application/x-www-form-urlencoded'
-        },
+                headers: {
+                    'Content-Type':
+                    'application/x-www-form-urlencoded'
+                },
 
-        body: 'id=' + id
+                body: 'id=' + id
+            }
+        );
 
-    })
-    .then(res => res.json())
-    .then(data => {
+        // DISABLE BUTTON
+        button.disabled = true;
 
-        if(data.success)
-        {
-            button.disabled = true;
+        button.classList.remove(
+            'btn-success'
+        );
 
-            button.classList.remove('btn-success');
+        button.classList.add(
+            'btn-secondary'
+        );
 
-            button.classList.add('btn-secondary');
-
-            button.innerHTML = 'Printed';
-        }
+        button.innerHTML = 'Printed';
 
     });
 }
@@ -767,58 +846,64 @@ async function printSelectedRows(planId)
         return;
     }
 
-    let labels = '';
+    let labels = [];
 
     for(let cb of checkedRows)
     {
         let row = cb.closest('tr');
 
-        // GENERATE LABEL
-        labels +=
-            await generateQRLabel(row);
-
-        // BUTTON PRINT
-        let button =
-            row.querySelector('.btn-print');
-
-        // JIKA BUTTON ADA
-        if(button)
-        {
-            let id = button.dataset.id;
-
-            // UPDATE DATABASE
-            await fetch(
-                'update_print_status.php',
-                {
-
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type':
-                        'application/x-www-form-urlencoded'
-                    },
-
-                    body: 'id=' + id
-                }
-            );
-
-            // DISABLE BUTTON
-            button.disabled = true;
-
-            button.classList.remove(
-                'btn-success'
-            );
-
-            button.classList.add(
-                'btn-secondary'
-            );
-
-            button.innerHTML = 'Printed';
-        }
+        labels.push({
+            row : row,
+            html : await generateQRLabel(row)
+        });
     }
 
-    // PRINT SEMUA LABEL
-    openPrintWindow(labels);
+    let finalHtml =
+        labels.map(x => x.html).join('');
+
+    openPrintWindow(finalHtml, async function(){
+
+        for(let item of labels)
+        {
+            let button =
+                item.row.querySelector('.btn-print');
+
+            if(button)
+            {
+                let id = button.dataset.id;
+
+                // UPDATE DB
+                await fetch(
+                    'update_print_status.php',
+                    {
+
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                            'application/x-www-form-urlencoded'
+                        },
+
+                        body: 'id=' + id
+                    }
+                );
+
+                // DISABLE BUTTON
+                button.disabled = true;
+
+                button.classList.remove(
+                    'btn-success'
+                );
+
+                button.classList.add(
+                    'btn-secondary'
+                );
+
+                button.innerHTML = 'Printed';
+            }
+        }
+
+    });
 }
 
 
@@ -838,8 +923,11 @@ async function generateQRLabel(row)
     let size    = row.cells[7].innerText;
     let qty     = row.cells[8].innerText;
 
+    let qrElement =
+    row.querySelector('.qr-value');
+
     let qrText =
-        row.querySelector('.qr-value').innerText;
+        qrElement.dataset.qr;
 
     let qrLast =
         qrText.split('-').pop();
@@ -912,7 +1000,7 @@ async function generateQRLabel(row)
    OPEN PRINT WINDOW
 ========================================= */
 
-async function openPrintWindow(content)
+function openPrintWindow(content, callback = null)
 {
     let printWindow =
         window.open('', '', 'width=800,height=600');
@@ -1057,15 +1145,21 @@ async function openPrintWindow(content)
 
     setTimeout(() => {
 
-    printWindow.focus();
+        printWindow.focus();
 
-    printWindow.print();
-
-        setTimeout(() => {
-
+        // AFTER PRINT
+        printWindow.onafterprint = function()
+        {
             printWindow.close();
 
-        }, 1000);
+            // CALLBACK
+            if(callback)
+            {
+                callback();
+            }
+        };
+
+        printWindow.print();
 
     }, 3000);
 }

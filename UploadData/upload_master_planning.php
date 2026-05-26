@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start();
 
 require '../function.php';
 require '../vendor/autoload.php';
@@ -138,7 +138,7 @@ if(isset($_POST['upload'])){
     for($row = 13; $row <= $highestRow; $row++){
 
         $style = trim(
-            $sheet->getCell('A'.$row)->getValue()
+            (string)$sheet->getCell('A'.$row)->getValue()
         );
 
         // SKIP ROW KOSONG
