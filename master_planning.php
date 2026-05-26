@@ -507,13 +507,28 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
         <!-- ACTION -->
         <td>
 
-            <button type="button"
-                    class="btn btn-sm btn-success"
-                    onclick="printSingleQR(this)">
+            <?php if($bundle['status_print'] == 'NO') : ?>
 
-                Print
+                <button type="button"
+                        class="btn btn-sm btn-success btn-print"
+                        data-id="<?= $bundle['id_barcode']; ?>"
+                        onclick="printSingleQR(this)">
 
-            </button>
+                    Print
+
+                </button>
+
+            <?php else : ?>
+
+                <button type="button"
+                        class="btn btn-sm btn-secondary"
+                        disabled>
+
+                    Printed
+
+                </button>
+
+            <?php endif; ?>
 
         </td>
 
@@ -726,12 +741,53 @@ async function printSelectedRows(planId)
     {
         let row = cb.closest('tr');
 
+        // GENERATE LABEL
         labels +=
             await generateQRLabel(row);
+
+        // BUTTON PRINT
+        let button =
+            row.querySelector('.btn-print');
+
+        // JIKA BUTTON ADA
+        if(button)
+        {
+            let id = button.dataset.id;
+
+            // UPDATE DATABASE
+            await fetch(
+                'update_print_status.php',
+                {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                        'application/x-www-form-urlencoded'
+                    },
+
+                    body: 'id=' + id
+                }
+            );
+
+            // DISABLE BUTTON
+            button.disabled = true;
+
+            button.classList.remove(
+                'btn-success'
+            );
+
+            button.classList.add(
+                'btn-secondary'
+            );
+
+            button.innerHTML = 'Printed';
+        }
     }
 
+    // PRINT SEMUA LABEL
     openPrintWindow(labels);
-}openPrintWindow(labels);
+}
 
 
 /* =========================================
@@ -745,6 +801,7 @@ async function generateQRLabel(row)
     let gender  = row.cells[3].innerText;
     let colour  = row.cells[4].innerText;
     let po      = row.cells[5].innerText;
+    let po_item = row.cells[6].innerText;
 
     let size    = row.cells[7].innerText;
     let qty     = row.cells[8].innerText;
@@ -776,7 +833,7 @@ async function generateQRLabel(row)
                 </div>
 
                 <div class="top-text">
-                    ${po}
+                    ${po}-${po_item}
                 </div>
 
                 <div class="top-text">
