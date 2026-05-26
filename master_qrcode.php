@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start();
 require 'function.php';
 
 if (!isset($_SESSION['login'])) {
