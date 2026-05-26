@@ -1,5 +1,5 @@
 <?php
-// session_start();
+session_start();
 require 'function.php';
 
 if (!isset($_SESSION['login'])) {
@@ -551,15 +551,15 @@ if (!isset($_SESSION['login'])) {
 
                                         <option
                                             value="PRINT"
-                                            <?= (@$_GET['status'] == 'PRINT') ? 'selected' : ''; ?>>
+                                            <?= (@$_GET['status'] == 'YES') ? 'selected' : ''; ?>>
 
-                                            🟢 PRINT
+                                            🟢 PRINTED
 
                                         </option>
 
                                         <option
                                             value="NOT PRINT"
-                                            <?= (@$_GET['status'] == 'NOT PRINT') ? 'selected' : ''; ?>>
+                                            <?= (@$_GET['status'] == 'NO') ? 'selected' : ''; ?>>
 
                                             🔴 NOT PRINT
 
@@ -780,10 +780,10 @@ if (!isset($_SESSION['login'])) {
 
                                                 <td>
 
-                                                    <?php if($d['status_print'] == "PRINT") : ?>
+                                                    <?php if($d['status_print'] == "YES") : ?>
 
                                                         <span class="badge badge-success">
-                                                            PRINT
+                                                            PRINTED
                                                         </span>
 
                                                     <?php else : ?>
@@ -829,7 +829,7 @@ if (!isset($_SESSION['login'])) {
                                 class="btn btn-warning">
 
                                 <i class="fas fa-print"></i>
-                                Print Selected QR Code
+                                Print
 
                             </button>
 
