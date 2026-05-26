@@ -417,6 +417,12 @@ $Planning = mysqli_query($conn,"
                         <thead class="bg-info">
 
                             <tr>
+                                <th width="50">
+                                    <input type="checkbox"
+                                        id="checkAll<?= $Plan['id_jo_spk']; ?>"
+                                        onclick="toggleAll('<?= $Plan['id_jo_spk']; ?>')">
+                                </th>
+
 
                                 <th>Bucket</th>
                                 <th>Style</th>
@@ -427,6 +433,7 @@ $Planning = mysqli_query($conn,"
                                 <th>Size</th>
                                 <th>Qty</th>
                                 <th>Qr Code</th>
+                                <th width="120">Action</th>
 
                             </tr>
 
@@ -474,6 +481,11 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
 
     <tr>
 
+        <td>
+            <input type="checkbox"
+                class="row-check-<?= $Plan['id_jo_spk']; ?>">
+        </td>
+
         <td><?= $bundle['bucket']; ?></td>
         <td><?= $bundle['style']; ?></td>
         <td><?= $bundle['gender']; ?></td>
@@ -488,8 +500,21 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
         <td><?= $bundle['qty']; ?></td>
 
         <!-- QR -->
+        <td class="qr-value">
+            <?= $bundle['qr_code']; ?>
+        </td>
+
+        <!-- ACTION -->
         <td>
-            <medium><?= $bundle['qr_code']; ?></medium>
+
+            <button type="button"
+                    class="btn btn-sm btn-success"
+                    onclick="printSingleQR(this)">
+
+                Print
+
+            </button>
+
         </td>
 
     </tr>
@@ -512,6 +537,10 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
 
                   <tr>
 
+                      <td>
+                          <input type="checkbox"
+                              class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                      </td>
                       <td><?= $d['bucket']; ?></td>
                       <td><?= $d['style']; ?></td>
                       <td><?= $d['gender']; ?></td>
@@ -527,6 +556,19 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
 
                       <!-- QR -->
                       <td>
+
+                      <!-- ACTION -->
+                    <td>
+
+                        <button type="button"
+                                class="btn btn-sm btn-success"
+                                onclick="printSingleQR(this)">
+
+                            Print
+
+                        </button>
+
+                    </td>
 
                           <span class="badge badge-secondary">
                               Belum Generate
@@ -548,10 +590,21 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
             <div class="modal-footer">
 
                 <button type="button"
+                        class="btn btn-primary"
+                        onclick="printSelectedRows('<?= $Plan['id_jo_spk']; ?>')">
+
+                    Print Selected
+
+                </button>
+
+                <button type="button"
                         class="btn btn-secondary"
                         data-dismiss="modal">
+
                     Close
+
                 </button>
+
             </div>
         </div>
     </div>
@@ -581,6 +634,9 @@ $alreadyGenerate = mysqli_num_rows($checkGenerate);
 <!-- AdminLTE -->
 <script src="dist/js/adminlte.min.js"></script>
 
+<!-- QR Code -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <!-- FILE INPUT -->
 <script>
 $('.custom-file-input').on('change', function () {
@@ -590,6 +646,342 @@ $('.custom-file-input').on('change', function () {
     $(this).next('.custom-file-label').html(fileName);
 
 });
+</script>
+
+<!-- TOGGLE ALL CHECKBOXES -->
+<script>
+
+function toggleAll(planId)
+{
+    let checkAll = document.getElementById('checkAll' + planId);
+
+    let checkboxes =
+        document.querySelectorAll('.row-check-' + planId);
+
+    checkboxes.forEach(function(cb) {
+        cb.checked = checkAll.checked;
+    });
+}
+
+</script>
+
+<!-- PRINT SINGLE QR -->
+ <script>
+
+/* =========================================
+   SELECT ALL
+========================================= */
+
+function toggleAll(planId)
+{
+    let checkAll =
+        document.getElementById('checkAll' + planId);
+
+    let checkboxes =
+        document.querySelectorAll(
+            '.row-check-' + planId
+        );
+
+    checkboxes.forEach(function(cb){
+
+        cb.checked = checkAll.checked;
+
+    });
+}
+
+/* =========================================
+   PRINT SINGLE QR
+========================================= */
+
+async function printSingleQR(button)
+{
+    let row = button.closest('tr');
+
+    let label =
+        await generateQRLabel(row);
+
+    openPrintWindow(label);
+}
+
+/* =========================================
+   PRINT MULTIPLE QR
+========================================= */
+
+async function printSelectedRows(planId)
+{
+    let checkedRows =
+        document.querySelectorAll(
+            '.row-check-' + planId + ':checked'
+        );
+
+    if(checkedRows.length == 0)
+    {
+        alert('Pilih minimal 1 row');
+        return;
+    }
+
+    let labels = '';
+
+    for(let cb of checkedRows)
+    {
+        let row = cb.closest('tr');
+
+        labels +=
+            await generateQRLabel(row);
+    }
+
+    openPrintWindow(labels);
+}openPrintWindow(labels);
+
+
+/* =========================================
+   GENERATE LABEL
+========================================= */
+
+async function generateQRLabel(row)
+{
+    let bucket  = row.cells[1].innerText;
+    let style   = row.cells[2].innerText;
+    let gender  = row.cells[3].innerText;
+    let colour  = row.cells[4].innerText;
+    let po      = row.cells[5].innerText;
+
+    let size    = row.cells[7].innerText;
+    let qty     = row.cells[8].innerText;
+
+    let qrText =
+        row.querySelector('.qr-value').innerText;
+
+    let qrLast =
+        qrText.split('-').pop();
+
+    // GENERATE QR IMAGE BASE64
+    let qrImage =
+        await QRCode.toDataURL(qrText, {
+
+            width: 80,
+            margin: 0
+
+        });
+
+    return `
+
+        <div class="label">
+
+            <!-- LEFT -->
+            <div class="left-section">
+
+                <div class="top-text">
+                    ${bucket}
+                </div>
+
+                <div class="top-text">
+                    ${po}
+                </div>
+
+                <div class="top-text">
+                    ${style}
+                </div>
+
+                <div class="top-text">
+                    ${gender} - ${colour}
+                </div>
+
+                <div class="bottom-row">
+
+                    <div class="size">
+                        ${size}
+                    </div>
+
+                    <div class="qty">
+                        ${qty}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- RIGHT -->
+            <div class="right-section">
+
+                <img src="${qrImage}"
+                     class="qr-img">
+
+                <div class="qr-text">
+                    ${qrLast}
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+
+/* =========================================
+   OPEN PRINT WINDOW
+========================================= */
+
+async function openPrintWindow(content)
+{
+    let printWindow =
+        window.open('', '', 'width=800,height=600');
+
+    printWindow.document.write(`
+
+        <html>
+
+        <head>
+
+            <title>Print QR</title>
+
+            <style>
+
+                @page{
+                    size: 50mm 30mm;
+                    margin:0;
+                }
+
+                html, body{
+
+                    margin:0;
+                    padding:0;
+
+                    font-family:Arial,sans-serif;
+                }
+
+                /* CONTAINER */
+                .print-area{
+
+                    width:50mm;
+
+                }
+
+                /* 1 LABEL */
+                .label{
+
+                    width:50mm;
+                    height:30mm;
+
+                    box-sizing:border-box;
+
+                    display:flex;
+
+                    padding:2mm;
+
+                    overflow:hidden;
+
+                    page-break-after:always;
+
+                    page-break-inside:avoid;
+                }
+
+                /* LEFT */
+                .left-section{
+
+                    width:58%;
+
+                    display:flex;
+                    flex-direction:column;
+
+                    justify-content:space-between;
+                }
+
+                /* RIGHT */
+                .right-section{
+
+                    width:42%;
+
+                    display:flex;
+                    flex-direction:column;
+
+                    align-items:center;
+                    justify-content:center;
+                }
+
+                /* TEXT */
+                .top-text{
+
+                    font-size:3.2mm;
+                    line-height:1.1;
+                }
+
+                .bottom-row{
+
+                    display:flex;
+                    align-items:flex-end;
+
+                    gap:2mm;
+                }
+
+                .size{
+
+                    font-size:10mm;
+                    font-weight:bold;
+
+                    line-height:1;
+                }
+
+                .qty{
+
+                    font-size:5mm;
+
+                    margin-bottom:1mm;
+                }
+
+                /* QR */
+                .qr-img{
+
+                    width:14mm;
+                    height:14mm;
+
+                    object-fit:contain;
+                }
+
+                .qr-text{
+
+                    font-size:3mm;
+
+                    margin-top:1mm;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="print-area">
+
+                ${content}
+
+            </div>
+
+        </body>
+
+        </html>
+
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(() => {
+
+    printWindow.focus();
+
+    printWindow.print();
+
+        setTimeout(() => {
+
+            printWindow.close();
+
+        }, 1000);
+
+    }, 3000);
+}
+
+
 </script>
 
 <!-- DATATABLE -->
