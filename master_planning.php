@@ -441,237 +441,182 @@ $Planning = mysqli_query($conn,"
 
                         <tbody>
 
-                            <?php foreach($detail as $d) : ?>
-
                             <?php
-                            $sizeQty = mysqli_query($conn,"
+
+                            // CEK APAKAH QR SUDAH DIGENERATE
+                            $bundleData = mysqli_query($conn,"
                                 SELECT *
-                                FROM tbl_spk_size_qty
-                                WHERE id_detail = '".$d['id_detail']."'
+                                FROM tbl_master_barcode
+                                WHERE no_jo = '".$Plan['no_jo']."'
                             ");
+
+                            $alreadyGenerate = mysqli_num_rows($bundleData);
+
                             ?>
 
-                            <?php
+                            <!-- =========================================
+                                JIKA SUDAH GENERATE QR
+                            ========================================= -->
 
-            // CEK APAKAH SUDAH GENERATE
-            $checkGenerate = mysqli_query($conn,"
-                SELECT *
-                FROM tbl_master_barcode
-                WHERE no_jo = '".$Plan['no_jo']."'
-            ");
+                            <?php if($alreadyGenerate > 0) : ?>
 
-            $alreadyGenerate = mysqli_num_rows($checkGenerate);
+                                <?php foreach($bundleData as $bundle) : ?>
 
-?>
+                                <?php
 
-<?php if($alreadyGenerate > 0) : ?>
+                                $qr = trim($bundle['qr_code'] ?? '');
 
-    <?php
+                                ?>
 
-    // AMBIL DATA HASIL GENERATE QR
-    $bundleData = mysqli_query($conn,"
-        SELECT *
-        FROM tbl_master_barcode
-        WHERE no_jo = '".$Plan['no_jo']."'
-    ");
+                                <tr>
 
-    ?>
+                                    <!-- CHECKBOX -->
+                                    <td>
+                                        <input type="checkbox"
+                                            class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                    </td>
 
-    <?php foreach($bundleData as $bundle) : ?>
+                                    <!-- DATA -->
+                                    <td><?= $bundle['bucket']; ?></td>
+                                    <td><?= $bundle['style']; ?></td>
+                                    <td><?= $bundle['gender']; ?></td>
+                                    <td><?= $bundle['colour']; ?></td>
+                                    <td><?= $bundle['po']; ?></td>
+                                    <td><?= $bundle['po_item']; ?></td>
+                                    <td><?= $bundle['size']; ?></td>
+                                    <td><?= $bundle['qty']; ?></td>
 
-    <tr>
+                                    <!-- QR -->
+                                    <td class="qr-value text-center"
+                                        data-qr="<?= $bundle['qr_code']; ?>">
 
-        <td>
-            <input type="checkbox"
-                class="row-check-<?= $Plan['id_jo_spk']; ?>">
-        </td>
+                                        <?php if($qr == '') : ?>
 
-        <td><?= $bundle['bucket']; ?></td>
-        <td><?= $bundle['style']; ?></td>
-        <td><?= $bundle['gender']; ?></td>
-        <td><?= $bundle['colour']; ?></td>
-        <td><?= $bundle['po']; ?></td>
-        <td><?= $bundle['po_item']; ?></td>
+                                            <span class="text-danger">
+                                                Not Generated
+                                            </span>
 
-        <!-- SIZE -->
-        <td><?= $bundle['size']; ?></td>
+                                        <?php else : ?>
 
-        <!-- QTY -->
-        <td><?= $bundle['qty']; ?></td>
+                                            <?= $bundle['qr_code']; ?>
 
-        <!-- QR -->
-        <td class="qr-value text-center"
-            data-qr="<?= $bundle['qr_code']; ?>">
+                                        <?php endif; ?>
 
-            <?php if(empty($bundle['qr_code'])) : ?>
+                                    </td>
 
-                <button type="button"
-                        class="btn btn-sm btn-danger"
-                        disabled>
+                                    <!-- ACTION -->
+                                    <td>
 
-                    Belum Generate
+                                        <?php if($qr == '') : ?>
 
-                </button>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    disabled>
 
-            <?php else : ?>
+                                                Can't Print
 
-                <?= $bundle['qr_code']; ?>
+                                            </button>
 
-            <?php endif; ?>
+                                        <?php elseif($bundle['status_print'] == 'NO') : ?>
 
-        </td>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-success btn-print"
+                                                    data-id="<?= $bundle['id_barcode']; ?>"
+                                                    onclick="printSingleQR(this)">
 
-        <!-- ACTION -->
-        <td>
+                                                Print
 
-            <?php
+                                            </button>
 
-            $qr = trim($bundle['qr_code'] ?? '');
+                                        <?php else : ?>
 
-            ?>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary"
+                                                    disabled>
 
-            <?php if($qr == '') : ?>
+                                                Printed
 
-                <button type="button"
-                        class="btn btn-sm btn-danger"
-                        disabled>
+                                            </button>
 
-                    Can't Print
+                                        <?php endif; ?>
 
-                </button>
+                                    </td>
 
-            <?php elseif($bundle['status_print'] == 'NO') : ?>
+                                </tr>
 
-                <button type="button"
-                        class="btn btn-sm btn-success btn-print"
-                        data-id="<?= $bundle['id_barcode']; ?>"
-                        onclick="printSingleQR(this)">
+                                <?php endforeach; ?>
 
-                    Print
-
-                </button>
-
-            <?php else : ?>
-
-                <button type="button"
-                        class="btn btn-sm btn-secondary"
-                        disabled>
-
-                    Printed
-
-                </button>
-
-            <?php endif; ?>
-
-        </td>
-
-    </tr>
-
-    <?php endforeach; ?>
-
-          <?php else : ?>
-
-              <?php foreach($detail as $d) : ?>
-
-                  <?php
-                  $sizeQty = mysqli_query($conn,"
-                      SELECT *
-                      FROM tbl_spk_size_qty
-                      WHERE id_detail = '".$d['id_detail']."'
-                  ");
-                  ?>
-
-                  <?php foreach($sizeQty as $sz) : ?>
-
-                  <tr>
-
-                      <td>
-                          <input type="checkbox"
-                              class="row-check-<?= $Plan['id_jo_spk']; ?>">
-                      </td>
-                      <td><?= $d['bucket']; ?></td>
-                      <td><?= $d['style']; ?></td>
-                      <td><?= $d['gender']; ?></td>
-                      <td><?= $d['colour']; ?></td>
-                      <td><?= $d['po']; ?></td>
-                      <td><?= $d['po_item']; ?></td>
-
-                      <!-- SIZE -->
-                      <td><?= $sz['size']; ?></td>
-
-                      <!-- QTY -->
-                      <td><?= $sz['qty']; ?></td>
-
-                      <!-- QR -->
-                      <td class="qr-value text-center"
-                            data-qr="<?= $bundle['qr_code']; ?>">
-
-                            <?php if(empty($bundle['qr_code'])) : ?>
-
-                                <button type="button"
-                                        class="btn btn-sm btn-danger"
-                                        disabled>
-
-                                    Not Generated
-
-                                </button>
+                            <!-- =========================================
+                                JIKA BELUM GENERATE QR
+                            ========================================= -->
 
                             <?php else : ?>
 
-                                <?= $bundle['qr_code']; ?>
+                                <?php foreach($detail as $d) : ?>
+
+                                    <?php
+
+                                    $sizeQty = mysqli_query($conn,"
+                                        SELECT *
+                                        FROM tbl_spk_size_qty
+                                        WHERE id_detail = '".$d['id_detail']."'
+                                    ");
+
+                                    ?>
+
+                                    <?php foreach($sizeQty as $sz) : ?>
+
+                                    <tr>
+
+                                        <!-- CHECKBOX -->
+                                        <td>
+                                            <input type="checkbox"
+                                                class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                        </td>
+
+                                        <!-- DATA -->
+                                        <td><?= $d['bucket']; ?></td>
+                                        <td><?= $d['style']; ?></td>
+                                        <td><?= $d['gender']; ?></td>
+                                        <td><?= $d['colour']; ?></td>
+                                        <td><?= $d['po']; ?></td>
+                                        <td><?= $d['po_item']; ?></td>
+
+                                        <!-- SIZE -->
+                                        <td><?= $sz['size']; ?></td>
+
+                                        <!-- QTY -->
+                                        <td><?= $sz['qty']; ?></td>
+
+                                        <!-- QR -->
+                                        <td class="text-center">
+
+                                            <span class="text-danger">
+                                                Not Generated
+                                            </span>
+
+                                        </td>
+
+                                        <!-- ACTION -->
+                                        <td>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    disabled>
+
+                                                Can't Print
+
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <?php endforeach; ?>
+
+                                <?php endforeach; ?>
 
                             <?php endif; ?>
-
-                        </td>
-
-                      <!-- ACTION -->
-                    <td>
-
-                        <?php
-
-                        $qr = trim($bundle['qr_code'] ?? '');
-
-                        ?>
-
-                        <?php if($qr == '') : ?>
-
-                            <button type="button"
-                                    class="btn btn-sm btn-danger"
-                                    disabled>
-
-                                Can't Print
-
-                            </button>
-
-                        <?php elseif($bundle['status_print'] == 'NO') : ?>
-
-                            <button type="button"
-                                    class="btn btn-sm btn-success btn-print"
-                                    data-id="<?= $bundle['id_barcode']; ?>"
-                                    onclick="printSingleQR(this)">
-
-                                Print
-
-                            </button>
-
-                        <?php else : ?>
-
-                            <button type="button"
-                                    class="btn btn-sm btn-secondary"
-                                    disabled>
-
-                                Printed
-
-                            </button>
-
-                        <?php endif; ?>
-
-                    </td>
-                  </tr>
-                  <?php endforeach; ?>
-              <?php endforeach; ?>
-          <?php endif; ?>
-                            <?php endforeach; ?>
 
                             </tbody>
 
