@@ -223,7 +223,7 @@ if (isset($_POST['outSupermarket'])) {
                     <label for="inputText" class="col-sm-6 col-form-label">SCAN OUT SUPERMARKET</label>
                       <div class="col-sm-12">
                         <input type="text" class="form-control" id="qr_code" name="qr_code" placeholder="Scan here" required="" autocomplete="off" autofocus="" maxlength="36" minlength="12">
-                        <input type="text" class="form-control" id="type_scan" name="type_scan" value="<?php echo $row['scan_type']?>" hidden>
+                        <input type="text" class="form-control" id="type_scan" name="type_scan" value="OUT_SM" hidden>
                         <input type="text" class="form-control" id="nik" name="nik" value="<?php echo $row['nik']?>" hidden>
                         <input type="text" class="form-control" id="username" name="username" value="<?php echo $row['username']?>" hidden>
                         <input type="text" class="form-control" id="cost_center" name="cost_center" value="<?php echo $row['cost_center']?>" hidden>
