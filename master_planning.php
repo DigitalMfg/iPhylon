@@ -441,159 +441,182 @@ $Planning = mysqli_query($conn,"
 
                         <tbody>
 
-                            <?php foreach($detail as $d) : ?>
-
                             <?php
-                            $sizeQty = mysqli_query($conn,"
+
+                            // CEK APAKAH QR SUDAH DIGENERATE
+                            $bundleData = mysqli_query($conn,"
                                 SELECT *
-                                FROM tbl_spk_size_qty
-                                WHERE id_detail = '".$d['id_detail']."'
+                                FROM tbl_master_barcode
+                                WHERE no_jo = '".$Plan['no_jo']."'
                             ");
+
+                            $alreadyGenerate = mysqli_num_rows($bundleData);
+
                             ?>
 
-                            <?php
+                            <!-- =========================================
+                                JIKA SUDAH GENERATE QR
+                            ========================================= -->
 
-// CEK APAKAH SUDAH GENERATE
-$checkGenerate = mysqli_query($conn,"
-    SELECT *
-    FROM tbl_master_barcode
-    WHERE no_jo = '".$Plan['no_jo']."'
-");
+                            <?php if($alreadyGenerate > 0) : ?>
 
-$alreadyGenerate = mysqli_num_rows($checkGenerate);
+                                <?php foreach($bundleData as $bundle) : ?>
 
-?>
+                                <?php
 
-<?php if($alreadyGenerate > 0) : ?>
+                                $qr = trim($bundle['qr_code'] ?? '');
 
-    <?php
+                                ?>
 
-    // AMBIL DATA HASIL GENERATE QR
-    $bundleData = mysqli_query($conn,"
-        SELECT *
-        FROM tbl_master_barcode
-        WHERE no_jo = '".$Plan['no_jo']."'
-    ");
+                                <tr>
 
-    ?>
+                                    <!-- CHECKBOX -->
+                                    <td>
+                                        <input type="checkbox"
+                                            class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                    </td>
 
-    <?php foreach($bundleData as $bundle) : ?>
+                                    <!-- DATA -->
+                                    <td><?= $bundle['bucket']; ?></td>
+                                    <td><?= $bundle['style']; ?></td>
+                                    <td><?= $bundle['gender']; ?></td>
+                                    <td><?= $bundle['colour']; ?></td>
+                                    <td><?= $bundle['po']; ?></td>
+                                    <td><?= $bundle['po_item']; ?></td>
+                                    <td><?= $bundle['size']; ?></td>
+                                    <td><?= $bundle['qty']; ?></td>
 
-    <tr>
+                                    <!-- QR -->
+                                    <td class="qr-value text-center"
+                                        data-qr="<?= $bundle['qr_code']; ?>">
 
-        <td>
-            <input type="checkbox"
-                class="row-check-<?= $Plan['id_jo_spk']; ?>">
-        </td>
+                                        <?php if($qr == '') : ?>
 
-        <td><?= $bundle['bucket']; ?></td>
-        <td><?= $bundle['style']; ?></td>
-        <td><?= $bundle['gender']; ?></td>
-        <td><?= $bundle['colour']; ?></td>
-        <td><?= $bundle['po']; ?></td>
-        <td><?= $bundle['po_item']; ?></td>
+                                            <span class="text-danger">
+                                                Not Generated
+                                            </span>
 
-        <!-- SIZE -->
-        <td><?= $bundle['size']; ?></td>
+                                        <?php else : ?>
 
-        <!-- QTY -->
-        <td><?= $bundle['qty']; ?></td>
+                                            <?= $bundle['qr_code']; ?>
 
-        <!-- QR -->
-        <td class="qr-value">
-            <?= $bundle['qr_code']; ?>
-        </td>
+                                        <?php endif; ?>
 
-        <!-- ACTION -->
-        <td>
+                                    </td>
 
-            <?php if($bundle['status_print'] == 'NO') : ?>
+                                    <!-- ACTION -->
+                                    <td>
 
-                <button type="button"
-                        class="btn btn-sm btn-success btn-print"
-                        data-id="<?= $bundle['id_barcode']; ?>"
-                        onclick="printSingleQR(this)">
+                                        <?php if($qr == '') : ?>
 
-                    Print
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    disabled>
 
-                </button>
+                                                Can't Print
 
-            <?php else : ?>
+                                            </button>
 
-                <button type="button"
-                        class="btn btn-sm btn-secondary"
-                        disabled>
+                                        <?php elseif($bundle['status_print'] == 'NO') : ?>
 
-                    Printed
+                                            <button type="button"
+                                                    class="btn btn-sm btn-success btn-print"
+                                                    data-id="<?= $bundle['id_barcode']; ?>"
+                                                    onclick="printSingleQR(this)">
 
-                </button>
+                                                Print
 
-            <?php endif; ?>
+                                            </button>
 
-        </td>
+                                        <?php else : ?>
 
-    </tr>
+                                            <button type="button"
+                                                    class="btn btn-sm btn-secondary"
+                                                    disabled>
 
-    <?php endforeach; ?>
+                                                Printed
 
-          <?php else : ?>
+                                            </button>
 
-              <?php foreach($detail as $d) : ?>
+                                        <?php endif; ?>
 
-                  <?php
-                  $sizeQty = mysqli_query($conn,"
-                      SELECT *
-                      FROM tbl_spk_size_qty
-                      WHERE id_detail = '".$d['id_detail']."'
-                  ");
-                  ?>
+                                    </td>
 
-                  <?php foreach($sizeQty as $sz) : ?>
+                                </tr>
 
-                  <tr>
+                                <?php endforeach; ?>
 
-                      <td>
-                          <input type="checkbox"
-                              class="row-check-<?= $Plan['id_jo_spk']; ?>">
-                      </td>
-                      <td><?= $d['bucket']; ?></td>
-                      <td><?= $d['style']; ?></td>
-                      <td><?= $d['gender']; ?></td>
-                      <td><?= $d['colour']; ?></td>
-                      <td><?= $d['po']; ?></td>
-                      <td><?= $d['po_item']; ?></td>
+                            <!-- =========================================
+                                JIKA BELUM GENERATE QR
+                            ========================================= -->
 
-                      <!-- SIZE -->
-                      <td><?= $sz['size']; ?></td>
+                            <?php else : ?>
 
-                      <!-- QTY -->
-                      <td><?= $sz['qty']; ?></td>
+                                <?php foreach($detail as $d) : ?>
 
-                      <!-- QR -->
-                      <td>
+                                    <?php
 
-                      <!-- ACTION -->
-                    <td>
+                                    $sizeQty = mysqli_query($conn,"
+                                        SELECT *
+                                        FROM tbl_spk_size_qty
+                                        WHERE id_detail = '".$d['id_detail']."'
+                                    ");
 
-                        <button type="button"
-                                class="btn btn-sm btn-success"
-                                onclick="printSingleQR(this)">
+                                    ?>
 
-                            Print
+                                    <?php foreach($sizeQty as $sz) : ?>
 
-                        </button>
+                                    <tr>
 
-                    </td>
+                                        <!-- CHECKBOX -->
+                                        <td>
+                                            <input type="checkbox"
+                                                class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                        </td>
 
-                          <span class="badge badge-secondary">
-                              Belum Generate
-                          </span>
-                      </td>
-                  </tr>
-                  <?php endforeach; ?>
-              <?php endforeach; ?>
-          <?php endif; ?>
-                            <?php endforeach; ?>
+                                        <!-- DATA -->
+                                        <td><?= $d['bucket']; ?></td>
+                                        <td><?= $d['style']; ?></td>
+                                        <td><?= $d['gender']; ?></td>
+                                        <td><?= $d['colour']; ?></td>
+                                        <td><?= $d['po']; ?></td>
+                                        <td><?= $d['po_item']; ?></td>
+
+                                        <!-- SIZE -->
+                                        <td><?= $sz['size']; ?></td>
+
+                                        <!-- QTY -->
+                                        <td><?= $sz['qty']; ?></td>
+
+                                        <!-- QR -->
+                                        <td class="text-center">
+
+                                            <span class="text-danger">
+                                                Not Generated
+                                            </span>
+
+                                        </td>
+
+                                        <!-- ACTION -->
+                                        <td>
+
+                                            <button type="button"
+                                                    class="btn btn-sm btn-danger"
+                                                    disabled>
+
+                                                Can't Print
+
+                                            </button>
+
+                                        </td>
+
+                                    </tr>
+
+                                    <?php endforeach; ?>
+
+                                <?php endforeach; ?>
+
+                            <?php endif; ?>
 
                             </tbody>
 
@@ -715,37 +738,38 @@ async function printSingleQR(button)
     let label =
         await generateQRLabel(row);
 
-    openPrintWindow(label);
+    openPrintWindow(label, async function(){
 
-    // AMBIL ID
-    let id = button.dataset.id;
+        let id = button.dataset.id;
 
-    // UPDATE STATUS PRINT
-    fetch('update_print_status.php', {
+        // UPDATE DATABASE
+        await fetch(
+            'update_print_status.php',
+            {
 
-        method: 'POST',
+                method: 'POST',
 
-        headers: {
-            'Content-Type':
-                'application/x-www-form-urlencoded'
-        },
+                headers: {
+                    'Content-Type':
+                    'application/x-www-form-urlencoded'
+                },
 
-        body: 'id=' + id
+                body: 'id=' + id
+            }
+        );
 
-    })
-    .then(res => res.json())
-    .then(data => {
+        // DISABLE BUTTON
+        button.disabled = true;
 
-        if(data.success)
-        {
-            button.disabled = true;
+        button.classList.remove(
+            'btn-success'
+        );
 
-            button.classList.remove('btn-success');
+        button.classList.add(
+            'btn-secondary'
+        );
 
-            button.classList.add('btn-secondary');
-
-            button.innerHTML = 'Printed';
-        }
+        button.innerHTML = 'Printed';
 
     });
 }
@@ -767,58 +791,64 @@ async function printSelectedRows(planId)
         return;
     }
 
-    let labels = '';
+    let labels = [];
 
     for(let cb of checkedRows)
     {
         let row = cb.closest('tr');
 
-        // GENERATE LABEL
-        labels +=
-            await generateQRLabel(row);
-
-        // BUTTON PRINT
-        let button =
-            row.querySelector('.btn-print');
-
-        // JIKA BUTTON ADA
-        if(button)
-        {
-            let id = button.dataset.id;
-
-            // UPDATE DATABASE
-            await fetch(
-                'update_print_status.php',
-                {
-
-                    method: 'POST',
-
-                    headers: {
-                        'Content-Type':
-                        'application/x-www-form-urlencoded'
-                    },
-
-                    body: 'id=' + id
-                }
-            );
-
-            // DISABLE BUTTON
-            button.disabled = true;
-
-            button.classList.remove(
-                'btn-success'
-            );
-
-            button.classList.add(
-                'btn-secondary'
-            );
-
-            button.innerHTML = 'Printed';
-        }
+        labels.push({
+            row : row,
+            html : await generateQRLabel(row)
+        });
     }
 
-    // PRINT SEMUA LABEL
-    openPrintWindow(labels);
+    let finalHtml =
+        labels.map(x => x.html).join('');
+
+    openPrintWindow(finalHtml, async function(){
+
+        for(let item of labels)
+        {
+            let button =
+                item.row.querySelector('.btn-print');
+
+            if(button)
+            {
+                let id = button.dataset.id;
+
+                // UPDATE DB
+                await fetch(
+                    'update_print_status.php',
+                    {
+
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                            'application/x-www-form-urlencoded'
+                        },
+
+                        body: 'id=' + id
+                    }
+                );
+
+                // DISABLE BUTTON
+                button.disabled = true;
+
+                button.classList.remove(
+                    'btn-success'
+                );
+
+                button.classList.add(
+                    'btn-secondary'
+                );
+
+                button.innerHTML = 'Printed';
+            }
+        }
+
+    });
 }
 
 
@@ -838,8 +868,11 @@ async function generateQRLabel(row)
     let size    = row.cells[7].innerText;
     let qty     = row.cells[8].innerText;
 
+    let qrElement =
+    row.querySelector('.qr-value');
+
     let qrText =
-        row.querySelector('.qr-value').innerText;
+        qrElement.dataset.qr;
 
     let qrLast =
         qrText.split('-').pop();
@@ -912,7 +945,7 @@ async function generateQRLabel(row)
    OPEN PRINT WINDOW
 ========================================= */
 
-async function openPrintWindow(content)
+function openPrintWindow(content, callback = null)
 {
     let printWindow =
         window.open('', '', 'width=800,height=600');
@@ -1057,15 +1090,21 @@ async function openPrintWindow(content)
 
     setTimeout(() => {
 
-    printWindow.focus();
+        printWindow.focus();
 
-    printWindow.print();
-
-        setTimeout(() => {
-
+        // AFTER PRINT
+        printWindow.onafterprint = function()
+        {
             printWindow.close();
 
-        }, 1000);
+            // CALLBACK
+            if(callback)
+            {
+                callback();
+            }
+        };
+
+        printWindow.print();
 
     }, 3000);
 }
