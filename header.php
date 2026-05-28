@@ -76,7 +76,7 @@ $scan_type = $_SESSION['scan_type'];
 
         <!-- DASHBOARD -->
         <li class="nav-item">
-          <a href="index.php"
+          <a href="dashboard.php"
           class="nav-link">
             <i class="nav-icon fas fa-home"></i>
             <p>
