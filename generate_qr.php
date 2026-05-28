@@ -105,7 +105,7 @@ while($row = mysqli_fetch_assoc($data)){
                 '".$row['size']."',
                 '$bundle_qty',
                 'NO',
-                'NO',
+                '0',
                 NOW(),
                 '$updated_by'
 

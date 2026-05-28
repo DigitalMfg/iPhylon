@@ -29,6 +29,10 @@ if (!isset($_SESSION['login'])) {
     <!-- DataTables -->
     <link rel="stylesheet"
         href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+        <link rel="stylesheet"
+        href="https://cdn.datatables.net/fixedheader/3.4.0/css/fixedHeader.dataTables.min.css">
+
+        <script src="https://cdn.datatables.net/fixedheader/3.4.0/js/dataTables.fixedHeader.min.js"></script>
 
     <link rel="stylesheet"
         href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
@@ -46,18 +50,30 @@ if (!isset($_SESSION['login'])) {
 
     <style>
 
+        /* AREA SCROLL */
         .table-responsive{
             max-height: 70vh;
             overflow: auto;
+            position: relative;
         }
 
-        /* FREEZE HEADER */
-        #example1 thead th{
+        /* TOP BAR DATATABLE */
+        .dataTables_wrapper .row:first-child{
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            background: #f4f6f9;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        /* HEADER TABLE */
+        #example1 thead th{
+            position: sticky;
+            top: 50px; /* tinggi row atas */
+            z-index: 999;
             background: #17a2b8 !important;
-            color: white;
+            color: white !important;
             white-space: nowrap;
         }
 
@@ -65,22 +81,6 @@ if (!isset($_SESSION['login'])) {
         #example1 td,
         #example1 th{
             white-space: nowrap;
-            vertical-align: middle;
-        }
-
-        /* CHECKBOX */
-        .checkItem,
-        #checkAll{
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        #example1 td:first-child,
-        #example1 td:nth-child(2),
-        #example1 th:first-child,
-        #example1 th:nth-child(2){
-            text-align: center;
             vertical-align: middle;
         }
 
@@ -237,14 +237,14 @@ if (!isset($_SESSION['login'])) {
                                             Line
                                         </option>
 
-                                        <option value="Line 1">Line 1</option>
-                                        <option value="Line 2">Line 2</option>
-                                        <option value="Line 3">Line 3</option>
-                                        <option value="Line 4">Line 4</option>
-                                        <option value="Line 5">Line 5</option>
-                                        <option value="Line 6">Line 6</option>
-                                        <option value="Line 7">Line 7</option>
-                                        <option value="Line 8">Line 8</option>
+                                        <option value="1">Line 1</option>
+                                        <option value="2">Line 2</option>
+                                        <option value="3">Line 3</option>
+                                        <option value="4">Line 4</option>
+                                        <option value="5">Line 5</option>
+                                        <option value="6">Line 6</option>
+                                        <option value="7">Line 7</option>
+                                        <option value="8">Line 8</option>
 
                                     </select>
 
@@ -550,16 +550,16 @@ if (!isset($_SESSION['login'])) {
                                         </option>
 
                                         <option
-                                            value="PRINT"
-                                            <?= (@$_GET['status'] == 'YES') ? 'selected' : ''; ?>>
+                                            value="1"
+                                            <?= (@$_GET['status'] == '1') ? 'selected' : ''; ?>>
 
                                             🟢 PRINTED
 
                                         </option>
 
                                         <option
-                                            value="NOT PRINT"
-                                            <?= (@$_GET['status'] == 'NO') ? 'selected' : ''; ?>>
+                                            value="0"
+                                            <?= (@$_GET['status'] == '0') ? 'selected' : ''; ?>>
 
                                             🔴 NOT PRINT
 
@@ -621,201 +621,208 @@ if (!isset($_SESSION['login'])) {
                         method="POST"
                         action="print_multiple_qrcode.php">
 
-                        <div class="card-body table-responsive">
+                        <div class="card-body">
 
-                            <table
-                                id="example1"
-                                class="table table-bordered table-striped">
+                            <div class="table-responsive">
 
-                                <thead>
+                                <table id="example1"
+                                    class="table table-bordered table-striped nowrap"
+                                        style="width:100%">
 
-                                    <tr>
+                                    <thead>
 
-                                        <th width="50">No</th>
+                                        <tr>
 
-                                        <th width="50">
-                                            <input
-                                                type="checkbox"
-                                                id="checkAll">
-                                        </th>
+                                            <th width="50">No</th>
 
-                                        <th>QR Code</th>
-                                        <th>JO</th>
-                                        <th>Line</th>
-                                        <th>Bucket</th>
-                                        <th>Style</th>
-                                        <th>PO</th>
-                                        <th>PO Item</th>
-                                        <th>Item</th>
-                                        <th>Gender</th>
-                                        <th>Colour</th>
-                                        <th>Size</th>
-                                        <th>Qty</th>
-                                        <th>Status</th>
+                                            <th width="50">
+                                                <input
+                                                    type="checkbox"
+                                                    id="checkAll">
+                                            </th>
 
-                                    </tr>
+                                            <th>QR Code</th>
+                                            <th>JO</th>
+                                            <th>Line</th>
+                                            <th>Bucket</th>
+                                            <th>Style</th>
+                                            <th>PO</th>
+                                            <th>PO Item</th>
+                                            <th>Item</th>
+                                            <th>Gender</th>
+                                            <th>Colour</th>
+                                            <th>Size</th>
+                                            <th>Qty</th>
+                                            <th>Status</th>
 
-                                </thead>
+                                        </tr>
 
-                                <tbody>
+                                    </thead>
 
-                                    <?php
+                                    <tbody>
 
-                                    $no = 1;
+                                        <?php
 
-                                    $query = "
-                                        SELECT *
-                                        FROM tbl_spk_size_qty sq
+                                        $no = 1;
 
-                                        JOIN tbl_spk_detail d
-                                        ON sq.id_detail = d.id_detail
+                                        $query = "
+                                            SELECT *
+                                            FROM tbl_spk_size_qty sq
 
-                                        JOIN tbl_jo_spk j
-                                        ON d.id_jo_spk = j.id_jo_spk
+                                            JOIN tbl_spk_detail d
+                                            ON sq.id_detail = d.id_detail
 
-                                        INNER JOIN tbl_master_barcode mb
-                                        ON sq.id_size_qty = mb.id_size_qty
+                                            JOIN tbl_jo_spk j
+                                            ON d.id_jo_spk = j.id_jo_spk
 
-                                        WHERE 1=1
-                                    ";
+                                            INNER JOIN tbl_master_barcode mb
+                                            ON sq.id_size_qty = mb.id_size_qty
 
-                                    if(isset($_GET['search'])){
+                                            WHERE 1=1
+                                        ";
 
-                                        if($_GET['qr_code'] != ''){
-                                            $query .= " AND mb.qr_code = '".$_GET['qr_code']."'";
+                                        if(isset($_GET['search'])){
+
+                                            if($_GET['qr_code'] != ''){
+                                                $query .= " AND mb.qr_code = '".$_GET['qr_code']."'";
+                                            }
+
+                                            if($_GET['no_jo'] != ''){
+                                                $query .= " AND j.no_jo LIKE '%".$_GET['no_jo']."%'";
+                                            }
+
+                                            if($_GET['line'] != ''){
+                                                $query .= " AND j.line_produksi LIKE '%".$_GET['line']."%'";
+                                            }
+
+                                            if($_GET['bucket'] != ''){
+                                                $query .= " AND d.bucket LIKE '%".$_GET['bucket']."%'";
+                                            }
+
+                                            if($_GET['style'] != ''){
+                                                $query .= " AND d.style LIKE '%".$_GET['style']."%'";
+                                            }
+
+                                            if($_GET['po'] != ''){
+                                                $query .= " AND d.po LIKE '%".$_GET['po']."%'";
+                                            }
+
+                                            if($_GET['po_item'] != ''){
+                                                $query .= " AND d.po_item LIKE '%".$_GET['po_item']."%'";
+                                            }
+
+                                            if($_GET['item'] != ''){
+                                                $query .= " AND j.item LIKE '%".$_GET['item']."%'";
+                                            }
+
+                                            if($_GET['gender'] != ''){
+                                                $query .= " AND d.gender LIKE '%".$_GET['gender']."%'";
+                                            }
+
+                                            if($_GET['colour'] != ''){
+                                                $query .= " AND d.colour LIKE '%".$_GET['colour']."%'";
+                                            }
+
+                                            if($_GET['size'] != ''){
+                                                $query .= " AND sq.size = '".$_GET['size']."'";
+                                            }
+
+                                            if($_GET['status'] == '1'){
+                                                $query .= " AND mb.status_print >= 1";
+                                            }
+
+                                            if($_GET['status'] == '0'){
+                                                $query .= " AND mb.status_print = 0";
+                                            }
+
                                         }
 
-                                        if($_GET['no_jo'] != ''){
-                                            $query .= " AND j.no_jo LIKE '%".$_GET['no_jo']."%'";
+                                        $data = [];
+
+                                        if(isset($_GET['search'])){
+
+                                            $query .= " ORDER BY mb.id_size_qty DESC";
+
+                                            $data = mysqli_query($conn, $query);
+
                                         }
 
-                                        if($_GET['line'] != ''){
-                                            $query .= " AND j.line_produksi LIKE '%".$_GET['line']."%'";
-                                        }
+                                        ?>
 
-                                        if($_GET['bucket'] != ''){
-                                            $query .= " AND d.bucket LIKE '%".$_GET['bucket']."%'";
-                                        }
+                                        <?php if(isset($_GET['search'])) : ?>
 
-                                        if($_GET['style'] != ''){
-                                            $query .= " AND d.style LIKE '%".$_GET['style']."%'";
-                                        }
+                                            <?php foreach($data as $d) : ?>
 
-                                        if($_GET['po'] != ''){
-                                            $query .= " AND d.po LIKE '%".$_GET['po']."%'";
-                                        }
+                                                <tr>
 
-                                        if($_GET['po_item'] != ''){
-                                            $query .= " AND d.po_item LIKE '%".$_GET['po_item']."%'";
-                                        }
+                                                    <td>
+                                                        <?= $no++; ?>
+                                                    </td>
 
-                                        if($_GET['item'] != ''){
-                                            $query .= " AND j.item LIKE '%".$_GET['item']."%'";
-                                        }
+                                                    <td>
 
-                                        if($_GET['gender'] != ''){
-                                            $query .= " AND d.gender LIKE '%".$_GET['gender']."%'";
-                                        }
+                                                            <input
+                                                                type="checkbox"
+                                                                class="checkItem"
+                                                                data-id="<?= $d['id_barcode']; ?>">
+                                                    </td>
 
-                                        if($_GET['colour'] != ''){
-                                            $query .= " AND d.colour LIKE '%".$_GET['colour']."%'";
-                                        }
+                                                    <td><?= $d['qr_code']; ?></td>
+                                                    <td><?= $d['no_jo']; ?></td>
+                                                    <td><?= $d['line_produksi']; ?></td>
+                                                    <td><?= $d['bucket']; ?></td>
+                                                    <td><?= $d['style']; ?></td>
+                                                    <td><?= $d['po']; ?></td>
+                                                    <td><?= $d['po_item']; ?></td>
+                                                    <td><?= $d['item']; ?></td>
+                                                    <td><?= $d['gender']; ?></td>
+                                                    <td><?= $d['colour']; ?></td>
+                                                    <td><?= $d['size']; ?></td>
+                                                    <td><?= $d['qty']; ?></td>
 
-                                        if($_GET['size'] != ''){
-                                            $query .= " AND sq.size = '".$_GET['size']."'";
-                                        }
+                                                    <td>
 
-                                        if($_GET['status'] != ''){
-                                            $query .= " AND sq.status_print = '".$_GET['status']."'";
-                                        }
+                                                        <?php if($d['status_print'] >= 1) : ?>
 
-                                    }
+                                                            <span class="badge badge-success">
+                                                                <?= $d['status_print']; ?> X |PRINTED 
+                                                            </span>
 
-                                    $data = [];
+                                                        <?php else : ?>
 
-                                    if(isset($_GET['search'])){
+                                                            <span class="badge badge-danger">
+                                                                NOT PRINT
+                                                            </span>
 
-                                        $query .= " ORDER BY sq.id_size_qty DESC";
+                                                        <?php endif; ?>
 
-                                        $data = mysqli_query($conn, $query);
+                                                    </td>
 
-                                    }
+                                                </tr>
 
-                                    ?>
+                                            <?php endforeach; ?>
 
-                                    <?php if(isset($_GET['search'])) : ?>
-
-                                        <?php foreach($data as $d) : ?>
+                                        <?php else : ?>
 
                                             <tr>
 
-                                                <td>
-                                                    <?= $no++; ?>
-                                                </td>
+                                                <td
+                                                    colspan="15"
+                                                    class="text-center text-muted">
 
-                                                <td>
-
-                                                        <input
-                                                            type="checkbox"
-                                                            value="<?= $d['id_barcode']; ?>"
-                                                            class="checkItem">
-                                                </td>
-
-                                                <td><?= $d['qr_code']; ?></td>
-                                                <td><?= $d['no_jo']; ?></td>
-                                                <td><?= $d['line_produksi']; ?></td>
-                                                <td><?= $d['bucket']; ?></td>
-                                                <td><?= $d['style']; ?></td>
-                                                <td><?= $d['po']; ?></td>
-                                                <td><?= $d['po_item']; ?></td>
-                                                <td><?= $d['item']; ?></td>
-                                                <td><?= $d['gender']; ?></td>
-                                                <td><?= $d['colour']; ?></td>
-                                                <td><?= $d['size']; ?></td>
-                                                <td><?= $d['qty']; ?></td>
-
-                                                <td>
-
-                                                    <?php if($d['status_print'] == "YES") : ?>
-
-                                                        <span class="badge badge-success">
-                                                            PRINTED
-                                                        </span>
-
-                                                    <?php else : ?>
-
-                                                        <span class="badge badge-danger">
-                                                            NOT PRINT
-                                                        </span>
-
-                                                    <?php endif; ?>
+                                                    Silakan lakukan filter terlebih dahulu
 
                                                 </td>
 
                                             </tr>
 
-                                        <?php endforeach; ?>
+                                        <?php endif; ?>
 
-                                    <?php else : ?>
+                                    </tbody>
 
-                                        <tr>
+                                </table>
 
-                                            <td
-                                                colspan="15"
-                                                class="text-center text-muted">
-
-                                                Silakan lakukan filter terlebih dahulu
-
-                                            </td>
-
-                                        </tr>
-
-                                    <?php endif; ?>
-
-                                </tbody>
-
-                            </table>
-
+                            </div>
                         </div>
 
                         <div class="card-footer">
@@ -884,20 +891,21 @@ if (!isset($_SESSION['login'])) {
 
         $('#example1').DataTable({
 
-            "paging": true,
-            "pageLength": 10,
+            paging: true,
+            pageLength: 10,
 
-            "lengthMenu": [
+            lengthMenu: [
                 [10, 25, 50, 100, -1],
                 [10, 25, 50, 100, "All"]
             ],
 
-            "lengthChange": true,
-            "searching": false,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false,
-            "responsive": false
+            lengthChange: true,
+            searching: false,
+            ordering: true,
+            info: true,
+
+            autoWidth: false,
+            responsive: false
 
         });
 
@@ -970,7 +978,29 @@ $('#btnPrintSelected').on('click', async function(){
             await generateTableQR(row);
     }
 
-    openPrintWindow(labels);
+    openPrintWindow(labels, async function(){
+
+        for(let cb of checked)
+        {
+            let id = cb.dataset.id;
+
+            await fetch(
+                'update_total_print.php',
+                {
+
+                    method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                            'application/x-www-form-urlencoded'
+                        },
+
+                        body: 'id=' + id
+                    }
+                );
+            }
+
+        });
 
 });
 
@@ -985,6 +1015,9 @@ async function generateTableQR(row)
 
     let bucket =
         row.cells[5].innerText.trim();
+
+    let line =
+        row.cells[4].innerText.trim();
 
     let style =
         row.cells[6].innerText.trim();
@@ -1025,7 +1058,7 @@ async function generateTableQR(row)
             <div class="left-section">
 
                 <div class="top-text">
-                    ${bucket}
+                    ${bucket} - Line ${line}
                 </div>
 
                 <div class="top-text">
@@ -1074,7 +1107,7 @@ async function generateTableQR(row)
    OPEN PRINT WINDOW
 ========================= */
 
-function openPrintWindow(content)
+function openPrintWindow(content, callback = null)
 {
     let printWindow =
         window.open('', '', 'width=800,height=600');
@@ -1211,13 +1244,23 @@ function openPrintWindow(content)
 
     printWindow.document.close();
 
-    setTimeout(() => {
+        setTimeout(() => {
 
-        printWindow.focus();
+            printWindow.focus();
 
-        printWindow.print();
+            printWindow.onafterprint = function()
+            {
+                printWindow.close();
 
-    }, 1000);
+                if(callback)
+                {
+                    callback();
+                }
+            };
+
+            printWindow.print();
+
+        }, 1000);
 }
 
 </script>

@@ -425,6 +425,7 @@ $Planning = mysqli_query($conn,"
 
 
                                 <th>Bucket</th>
+                                <th>Line</th>
                                 <th>Style</th>
                                 <th>Gender</th>
                                 <th>Colour</th>
@@ -478,6 +479,7 @@ $Planning = mysqli_query($conn,"
 
                                     <!-- DATA -->
                                     <td><?= $bundle['bucket']; ?></td>
+                                    <td><?= $bundle['line']; ?></td>
                                     <td><?= $bundle['style']; ?></td>
                                     <td><?= $bundle['gender']; ?></td>
                                     <td><?= $bundle['colour']; ?></td>
@@ -517,7 +519,7 @@ $Planning = mysqli_query($conn,"
 
                                             </button>
 
-                                        <?php elseif($bundle['status_print'] == 'NO') : ?>
+                                        <?php elseif($bundle['status_print'] == '0') : ?>
 
                                             <button type="button"
                                                     class="btn btn-sm btn-success btn-print"
@@ -858,15 +860,16 @@ async function printSelectedRows(planId)
 
 async function generateQRLabel(row)
 {
-    let bucket  = row.cells[1].innerText;
-    let style   = row.cells[2].innerText;
-    let gender  = row.cells[3].innerText;
-    let colour  = row.cells[4].innerText;
-    let po      = row.cells[5].innerText;
-    let po_item = row.cells[6].innerText;
+    let bucket         = row.cells[1].innerText;
+    let line           = row.cells[2].innerText;
+    let style          = row.cells[3].innerText;
+    let gender         = row.cells[4].innerText;
+    let colour         = row.cells[5].innerText;
+    let po             = row.cells[6].innerText;
+    let po_item        = row.cells[7].innerText;
 
-    let size    = row.cells[7].innerText;
-    let qty     = row.cells[8].innerText;
+    let size           = row.cells[8].innerText;
+    let qty            = row.cells[9].innerText;
 
     let qrElement =
     row.querySelector('.qr-value');
@@ -894,7 +897,7 @@ async function generateQRLabel(row)
             <div class="left-section">
 
                 <div class="top-text">
-                    ${bucket}
+                    ${bucket} - Line ${line}
                 </div>
 
                 <div class="top-text">
