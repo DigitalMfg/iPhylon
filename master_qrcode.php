@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start();
 require 'function.php';
 
 if (!isset($_SESSION['login'])) {
@@ -634,11 +634,9 @@ if (!isset($_SESSION['login'])) {
                                         <th width="50">No</th>
 
                                         <th width="50">
-
                                             <input
                                                 type="checkbox"
                                                 id="checkAll">
-
                                         </th>
 
                                         <th>QR Code</th>
@@ -757,12 +755,10 @@ if (!isset($_SESSION['login'])) {
 
                                                 <td>
 
-                                                    <input
-                                                        type="checkbox"
-                                                        name="selected_qr[]"
-                                                        value="<?= $d['id_size_qty']; ?>"
-                                                        class="checkItem">
-
+                                                        <input
+                                                            type="checkbox"
+                                                            value="<?= $d['id_barcode']; ?>"
+                                                            class="checkItem">
                                                 </td>
 
                                                 <td><?= $d['qr_code']; ?></td>
@@ -823,16 +819,14 @@ if (!isset($_SESSION['login'])) {
                         </div>
 
                         <div class="card-footer">
-
                             <button
-                                type="submit"
-                                class="btn btn-warning">
+                                type="button"
+                                class="btn btn-warning"
+                                id="btnPrintSelected">
 
                                 <i class="fas fa-print"></i>
-                                Print
-
+                                Print Selected
                             </button>
-
                         </div>
 
                     </form>
@@ -880,6 +874,9 @@ if (!isset($_SESSION['login'])) {
 <!-- AdminLTE -->
 <script src="dist/js/adminlte.min.js"></script>
 
+<!-- QR Code -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
 <script>
 
     /* DATATABLE */
@@ -926,6 +923,305 @@ if (!isset($_SESSION['login'])) {
     });
 
 </script>
+
+
+<script>
+
+/* =========================
+   SELECT ALL
+========================= */
+
+$('#checkAll').on('change', function(){
+
+    $('.checkItem').prop(
+        'checked',
+        $(this).prop('checked')
+    );
+
+});
+
+/* =========================
+   PRINT SELECTED
+========================= */
+
+$('#btnPrintSelected').on('click', async function(){
+
+    // console.log('PRINT CLICK');
+
+    let checked =
+        document.querySelectorAll(
+            '.checkItem:checked'
+        );
+
+    if(checked.length == 0)
+    {
+        alert('Pilih minimal 1 data');
+        return;
+    }
+
+    let labels = '';
+
+    for(let cb of checked)
+    {
+        let row =
+            cb.closest('tr');
+
+        labels +=
+            await generateTableQR(row);
+    }
+
+    openPrintWindow(labels);
+
+});
+
+/* =========================
+   GENERATE QR LABEL
+========================= */
+
+async function generateTableQR(row)
+{
+    let qrText =
+        row.cells[2].innerText.trim();
+
+    let bucket =
+        row.cells[5].innerText.trim();
+
+    let style =
+        row.cells[6].innerText.trim();
+
+    let po =
+        row.cells[7].innerText.trim();
+
+    let poItem =
+        row.cells[8].innerText.trim();
+
+    let gender =
+        row.cells[10].innerText.trim();
+
+    let colour =
+        row.cells[11].innerText.trim();
+
+    let size =
+        row.cells[12].innerText.trim();
+
+    let qty =
+        row.cells[13].innerText.trim();
+
+    let qrLast =
+        qrText.split('-').pop();
+
+    let qrImage =
+        await QRCode.toDataURL(qrText, {
+
+            width: 80,
+            margin: 0
+
+        });
+
+    return `
+
+        <div class="label">
+
+            <div class="left-section">
+
+                <div class="top-text">
+                    ${bucket}
+                </div>
+
+                <div class="top-text">
+                    ${po}-${poItem}
+                </div>
+
+                <div class="top-text">
+                    ${style}
+                </div>
+
+                <div class="top-text">
+                    ${gender} - ${colour}
+                </div>
+
+                <div class="bottom-row">
+
+                    <div class="size">
+                        ${size}
+                    </div>
+
+                    <div class="qty">
+                        ${qty}
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="right-section">
+
+                <img src="${qrImage}"
+                    class="qr-img">
+
+                <div class="qr-text">
+                    ${qrLast}
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+}
+
+/* =========================
+   OPEN PRINT WINDOW
+========================= */
+
+function openPrintWindow(content)
+{
+    let printWindow =
+        window.open('', '', 'width=800,height=600');
+
+    printWindow.document.write(`
+
+        <html>
+
+        <head>
+
+            <title>Print QR</title>
+
+            <style>
+
+                @page{
+                    size: 50mm 30mm;
+                    margin:0;
+                }
+
+                html, body{
+
+                    margin:0;
+                    padding:0;
+
+                    font-family:Arial,sans-serif;
+                }
+
+                .print-area{
+
+                    width:50mm;
+
+                }
+
+                .label{
+
+                    width:50mm;
+                    height:30mm;
+
+                    box-sizing:border-box;
+
+                    display:flex;
+
+                    padding:2mm;
+
+                    overflow:hidden;
+
+                    page-break-after:always;
+
+                    page-break-inside:avoid;
+                }
+
+                .left-section{
+
+                    width:58%;
+
+                    display:flex;
+                    flex-direction:column;
+
+                    justify-content:space-between;
+                }
+
+                .right-section{
+
+                    width:42%;
+
+                    display:flex;
+                    flex-direction:column;
+
+                    align-items:center;
+                    justify-content:center;
+                }
+
+                .top-text{
+
+                    font-size:3.2mm;
+                    line-height:1.1;
+                }
+
+                .bottom-row{
+
+                    display:flex;
+                    align-items:flex-end;
+
+                    gap:2mm;
+                }
+
+                .size{
+
+                    font-size:10mm;
+                    font-weight:bold;
+
+                    line-height:1;
+                }
+
+                .qty{
+
+                    font-size:5mm;
+
+                    margin-bottom:1mm;
+                }
+
+                .qr-img{
+
+                    width:14mm;
+                    height:14mm;
+
+                    object-fit:contain;
+                }
+
+                .qr-text{
+
+                    font-size:3mm;
+
+                    margin-top:1mm;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <div class="print-area">
+
+                ${content}
+
+            </div>
+
+        </body>
+
+        </html>
+
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(() => {
+
+        printWindow.focus();
+
+        printWindow.print();
+
+    }, 1000);
+}
+
+</script>
+
 
 </body>
 </html>
