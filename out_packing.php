@@ -16,6 +16,18 @@ $success = false;
 $error   = false;
 $message = "";
 
+// =========================================
+// AMBIL MESSAGE DARI SESSION
+// =========================================
+if(isset($_SESSION['message'])){
+
+    $message = $_SESSION['message'];
+    $status  = $_SESSION['status'];
+
+    unset($_SESSION['message']);
+    unset($_SESSION['status']);
+}
+
 if (isset($_POST['outPacking'])) {
 
     $qr_code     = trim($_POST['qr_code']);
@@ -40,11 +52,19 @@ if (isset($_POST['outPacking'])) {
 
     $dataTime = mysqli_fetch_assoc($getTime);
 
-    $hour_scan = $dataTime['hour'];
-    $shift     = $dataTime['shift'];
+    if ($dataTime) {
+
+        $hour_scan = $dataTime['hour'];
+        $shift     = $dataTime['shift'];
+
+    } else {
+
+        $hour_scan = '';
+        $shift     = '';
+    }
 
     // =========================================
-    // CEK QR ADA DI MASTER BARCODE
+    // CEK QR CODE
     // =========================================
     $cekBarcode = mysqli_query($conn,"
         SELECT *
@@ -54,7 +74,19 @@ if (isset($_POST['outPacking'])) {
 
     if(mysqli_num_rows($cekBarcode) > 0){
 
-    
+        $dataBarcode = mysqli_fetch_assoc($cekBarcode);
+
+        // =========================================
+        // VALIDASI STATUS PRINT
+        // =========================================
+        if(strtoupper($dataBarcode['status_print']) == 'NO'){
+
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'QR CODE BELUM DIPRINT';
+
+            header("Location: out_packing.php");
+            exit;
+        }
 
         // =========================================
         // CEK DOUBLE SCAN
@@ -68,49 +100,64 @@ if (isset($_POST['outPacking'])) {
 
         if(mysqli_num_rows($cekDouble) > 0){
 
-            $status = 'warning';
-            $message = 'QR CODE SUDAH DISCAN';
+            $_SESSION['status']  = 'warning';
+            $_SESSION['message'] = 'QR CODE SUDAH DISCAN';
+
+            header("Location: out_packing.php");
+            exit;
+        }
+
+        // =========================================
+        // INSERT TRANSACTION
+        // =========================================
+        $insert = mysqli_query($conn,"
+            INSERT INTO tbl_transaction_scan
+            (
+                qr_code,
+                date_transaction,
+                type_scan,
+                hour_scan,
+                shift,
+                nik,
+                username,
+                cost_center,
+                date_scan
+            )
+            VALUES
+            (
+                '$qr_code',
+                '$date_transaction',
+                '$type_scan',
+                '$hour_scan',
+                '$shift',
+                '$nik',
+                '$username',
+                '$cost_center',
+                '$date_scan'
+            )
+        ");
+
+        if($insert){
+
+            $_SESSION['status']  = 'success';
+            $_SESSION['message'] = 'SCAN BERHASIL';
 
         } else {
 
-            // =========================================
-            // INSERT TRANSACTION
-            // =========================================
-            mysqli_query($conn,"
-                INSERT INTO tbl_transaction_scan
-                (
-                    qr_code,
-                    date_transaction,
-                    type_scan,
-                    hour_scan,
-                    shift,
-                    nik,
-                    username,
-                    cost_center,
-                    date_scan
-                )
-                VALUES
-                (
-                    '$qr_code',
-                    '$date_transaction',
-                    '$type_scan',
-                    '$hour_scan',
-                    '$shift',
-                    '$nik',
-                    '$username',
-                    '$cost_center',
-                    '$date_scan'
-                )
-            ");
-
-            $status = 'success';
-            $message = 'SCAN BERHASIL';
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'GAGAL INSERT DATA';
         }
+
+        header("Location: out_packing.php");
+        exit;
 
     } else {
 
-        $status = 'error';
-        $message = 'QR CODE TIDAK DITEMUKAN';
+        $_SESSION['status']  = 'error';
+        $_SESSION['message'] = 'QR CODE TIDAK DITEMUKAN';
+
+        header("Location: out_packing.php");
+        exit;
     }
 }
 ?>

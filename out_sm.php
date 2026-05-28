@@ -16,6 +16,19 @@ $success = false;
 $error   = false;
 $message = "";
 
+// =========================================
+// AMBIL MESSAGE DARI SESSION
+// =========================================
+if(isset($_SESSION['message'])){
+
+    $message = $_SESSION['message'];
+    $status  = $_SESSION['status'];
+
+    unset($_SESSION['message']);
+    unset($_SESSION['status']);
+}
+
+
 if (isset($_POST['outSupermarket'])) {
 
     $qr_code     = trim($_POST['qr_code']);
@@ -40,8 +53,16 @@ if (isset($_POST['outSupermarket'])) {
 
     $dataTime = mysqli_fetch_assoc($getTime);
 
-    $hour_scan = $dataTime['hour'];
-    $shift     = $dataTime['shift'];
+    if ($dataTime) {
+
+        $hour_scan = $dataTime['hour'];
+        $shift     = $dataTime['shift'];
+
+    } else {
+
+        $hour_scan = '';
+        $shift     = '';
+    }
 
     // =========================================
     // CEK QR ADA DI MASTER BARCODE
@@ -54,81 +75,110 @@ if (isset($_POST['outSupermarket'])) {
 
     if(mysqli_num_rows($cekBarcode) > 0){
 
+        $dataBarcode = mysqli_fetch_assoc($cekBarcode);
+
         // =========================================
-        // CEK SUDAH SCAN IN ATAU BELUM
+        // VALIDASI STATUS PRINT
         // =========================================
-        $cekIN = mysqli_query($conn,"
+        if(strtoupper($dataBarcode['status_print']) == 'NO'){
+
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'QR CODE BELUM DIPRINT';
+
+            header("Location: out_sm.php");
+            exit;
+        }
+
+        // =========================================
+        // CEK SUDAH OUT PACKING ATAU BELUM
+        // =========================================
+        $cekPacking = mysqli_query($conn,"
             SELECT *
             FROM tbl_transaction_scan
             WHERE qr_code='$qr_code'
-            AND type_scan='IN_SM'
+            AND type_scan='OUT_PACKING'
         ");
 
-        if(mysqli_num_rows($cekIN) == 0){
+        if(mysqli_num_rows($cekPacking) == 0){
 
-            $status = 'error';
-            $message = 'QR BELUM SCAN IN';
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'QR BELUM SCAN OUT PACKING';
+
+            header("Location: out_sm.php");
+            exit;
+        }
+
+        // =========================================
+        // CEK DOUBLE SCAN
+        // =========================================
+        $cekDouble = mysqli_query($conn,"
+            SELECT *
+            FROM tbl_transaction_scan
+            WHERE qr_code='$qr_code'
+            AND type_scan='$type_scan'
+        ");
+
+        if(mysqli_num_rows($cekDouble) > 0){
+
+            $_SESSION['status']  = 'warning';
+            $_SESSION['message'] = 'QR CODE SUDAH DISCAN';
+
+            header("Location: out_sm.php");
+            exit;
+        }
+
+        // =========================================
+        // INSERT TRANSACTION
+        // =========================================
+        $insert = mysqli_query($conn,"
+            INSERT INTO tbl_transaction_scan
+            (
+                qr_code,
+                date_transaction,
+                type_scan,
+                hour_scan,
+                shift,
+                nik,
+                username,
+                cost_center,
+                date_scan
+            )
+            VALUES
+            (
+                '$qr_code',
+                '$date_transaction',
+                '$type_scan',
+                '$hour_scan',
+                '$shift',
+                '$nik',
+                '$username',
+                '$cost_center',
+                '$date_scan'
+            )
+        ");
+
+        if($insert){
+
+            $_SESSION['status']  = 'success';
+            $_SESSION['message'] = 'SCAN BERHASIL';
 
         } else {
 
-            // =========================================
-            // CEK DOUBLE SCAN OUT
-            // =========================================
-            $cekDouble = mysqli_query($conn,"
-                SELECT *
-                FROM tbl_transaction_scan
-                WHERE qr_code='$qr_code'
-                AND type_scan='$type_scan'
-            ");
-
-            if(mysqli_num_rows($cekDouble) > 0){
-
-                $status = 'warning';
-                $message = 'QR CODE SUDAH DISCAN';
-
-            } else {
-
-                // =========================================
-                // INSERT TRANSACTION
-                // =========================================
-                mysqli_query($conn,"
-                    INSERT INTO tbl_transaction_scan
-                    (
-                        qr_code,
-                        date_transaction,
-                        type_scan,
-                        hour_scan,
-                        shift,
-                        nik,
-                        username,
-                        cost_center,
-                        date_scan
-                    )
-                    VALUES
-                    (
-                        '$qr_code',
-                        '$date_transaction',
-                        '$type_scan',
-                        '$hour_scan',
-                        '$shift',
-                        '$nik',
-                        '$username',
-                        '$cost_center',
-                        '$date_scan'
-                    )
-                ");
-
-                $status = 'success';
-                $message = 'SCAN OUT BERHASIL';
-            }
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'GAGAL INSERT DATA';
         }
+
+        header("Location: out_sm.php");
+        exit;
 
     } else {
 
-        $status = 'error';
-        $message = 'QR CODE TIDAK DITEMUKAN';
-    }
+        $_SESSION['status']  = 'error';
+        $_SESSION['message'] = 'QR CODE TIDAK DITEMUKAN';
 
+        header("Location: out_sm.php");
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
