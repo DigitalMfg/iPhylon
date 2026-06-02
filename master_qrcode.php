@@ -1028,6 +1028,10 @@ async function generateTableQR(row)
     let poItem =
         row.cells[8].innerText.trim();
 
+    // TAMBAHAN ITEM
+    let item =
+        row.cells[9].innerText.trim();
+
     let gender =
         row.cells[10].innerText.trim();
 
@@ -1055,6 +1059,7 @@ async function generateTableQR(row)
 
         <div class="label">
 
+            <!-- LEFT -->
             <div class="left-section">
 
                 <div class="top-text">
@@ -1073,6 +1078,12 @@ async function generateTableQR(row)
                     ${gender} - ${colour}
                 </div>
 
+                <!-- ITEM -->
+                <div class="item-text">
+                    ${item}
+                </div>
+
+                <!-- SIZE + QTY -->
                 <div class="bottom-row">
 
                     <div class="size">
@@ -1087,10 +1098,11 @@ async function generateTableQR(row)
 
             </div>
 
+            <!-- RIGHT -->
             <div class="right-section">
 
                 <img src="${qrImage}"
-                    class="qr-img">
+                     class="qr-img">
 
                 <div class="qr-text">
                     ${qrLast}
@@ -1122,109 +1134,145 @@ function openPrintWindow(content, callback = null)
 
             <style>
 
-                @page{
-                    size: 50mm 30mm;
-                    margin:0;
-                }
+            @page{
+                size: 50mm 30mm;
+                margin:0;
+            }
 
-                html, body{
+            html,
+            body{
 
-                    margin:0;
-                    padding:0;
+                margin:0;
+                padding:0;
 
-                    font-family:Arial,sans-serif;
-                }
+                font-family:Arial,sans-serif;
+            }
 
-                .print-area{
+            /* PRINT AREA */
+            .print-area{
 
-                    width:50mm;
+                width:50mm;
+            }
 
-                }
+            /* LABEL */
+            .label{
 
-                .label{
+                width:50mm;
+                height:30mm;
 
-                    width:50mm;
-                    height:30mm;
+                box-sizing:border-box;
 
-                    box-sizing:border-box;
+                display:flex;
 
-                    display:flex;
+                padding:2mm;
 
-                    padding:2mm;
+                overflow:hidden;
 
-                    overflow:hidden;
+                page-break-after:always;
+                page-break-inside:avoid;
+            }
 
-                    page-break-after:always;
+            /* LEFT */
+            .left-section{
 
-                    page-break-inside:avoid;
-                }
+                width:60%;
 
-                .left-section{
+                display:flex;
+                flex-direction:column;
 
-                    width:58%;
+                padding-right:1mm;
 
-                    display:flex;
-                    flex-direction:column;
+                box-sizing:border-box;
+            }
 
-                    justify-content:space-between;
-                }
+            /* RIGHT */
+            .right-section{
 
-                .right-section{
+                width:40%;
 
-                    width:42%;
+                display:flex;
+                flex-direction:column;
 
-                    display:flex;
-                    flex-direction:column;
+                align-items:center;
+                justify-content:center;
+            }
 
-                    align-items:center;
-                    justify-content:center;
-                }
+            /* TEXT */
+            .top-text{
 
-                .top-text{
+                font-size:2.6mm;
 
-                    font-size:3.2mm;
-                    line-height:1.1;
-                }
+                line-height:1.05;
 
-                .bottom-row{
+                word-break:break-word;
+            }
 
-                    display:flex;
-                    align-items:flex-end;
+            /* ITEM */
+            .item-text{
 
-                    gap:2mm;
-                }
+                font-size:2.3mm;
 
-                .size{
+                line-height:1;
 
-                    font-size:10mm;
-                    font-weight:bold;
+                font-weight:bold;
 
-                    line-height:1;
-                }
+                text-transform:uppercase;
 
-                .qty{
+                word-break:break-word;
 
-                    font-size:5mm;
+                overflow:hidden;
 
-                    margin-bottom:1mm;
-                }
+                max-height:4.5mm;
+            }
 
-                .qr-img{
+            /* BOTTOM */
+            .bottom-row{
 
-                    width:14mm;
-                    height:14mm;
+                margin-top:auto;
 
-                    object-fit:contain;
-                }
+                display:flex;
 
-                .qr-text{
+                align-items:flex-end;
 
-                    font-size:3mm;
+                gap:2mm;
+            }
 
-                    margin-top:1mm;
-                }
+            /* SIZE */
+            .size{
 
-            </style>
+                font-size:11mm;
+
+                font-weight:bold;
+
+                line-height:0.9;
+            }
+
+            /* QTY */
+            .qty{
+
+                font-size:4.5mm;
+
+                margin-bottom:1mm;
+            }
+
+            /* QR */
+            .qr-img{
+
+                width:14mm;
+                height:14mm;
+
+                object-fit:contain;
+            }
+
+            /* QR TEXT */
+            .qr-text{
+
+                font-size:3mm;
+
+                margin-top:1mm;
+            }
+
+        </style>
 
         </head>
 

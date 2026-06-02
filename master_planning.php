@@ -429,6 +429,7 @@ $Planning = mysqli_query($conn,"
                                 <th>Style</th>
                                 <th>Gender</th>
                                 <th>Colour</th>
+                                <th>Item</th>
                                 <th>PO</th>
                                 <th>PO Item</th>
                                 <th>Size</th>
@@ -483,6 +484,7 @@ $Planning = mysqli_query($conn,"
                                     <td><?= $bundle['style']; ?></td>
                                     <td><?= $bundle['gender']; ?></td>
                                     <td><?= $bundle['colour']; ?></td>
+                                    <td><?= $bundle['item']; ?></td>
                                     <td><?= $bundle['po']; ?></td>
                                     <td><?= $bundle['po_item']; ?></td>
                                     <td><?= $bundle['size']; ?></td>
@@ -581,6 +583,7 @@ $Planning = mysqli_query($conn,"
                                         <td><?= $d['style']; ?></td>
                                         <td><?= $d['gender']; ?></td>
                                         <td><?= $d['colour']; ?></td>
+                                        <td><?= $d['item']; ?></td>
                                         <td><?= $d['po']; ?></td>
                                         <td><?= $d['po_item']; ?></td>
 
@@ -860,19 +863,21 @@ async function printSelectedRows(planId)
 
 async function generateQRLabel(row)
 {
-    let bucket         = row.cells[1].innerText;
-    let line           = row.cells[2].innerText;
-    let style          = row.cells[3].innerText;
-    let gender         = row.cells[4].innerText;
-    let colour         = row.cells[5].innerText;
-    let po             = row.cells[6].innerText;
-    let po_item        = row.cells[7].innerText;
+    let bucket     = row.cells[1].innerText;
+    let line       = row.cells[2].innerText;
+    let style      = row.cells[3].innerText;
+    let gender     = row.cells[4].innerText;
+    let colour     = row.cells[5].innerText;
+    let item       = row.cells[6].innerText;
+    let po         = row.cells[7].innerText;
+    let po_item    = row.cells[8].innerText;
+    let size       = row.cells[9].innerText;
+    let qty        = row.cells[10].innerText;
 
-    let size           = row.cells[8].innerText;
-    let qty            = row.cells[9].innerText;
+    
 
     let qrElement =
-    row.querySelector('.qr-value');
+        row.querySelector('.qr-value');
 
     let qrText =
         qrElement.dataset.qr;
@@ -880,7 +885,6 @@ async function generateQRLabel(row)
     let qrLast =
         qrText.split('-').pop();
 
-    // GENERATE QR IMAGE BASE64
     let qrImage =
         await QRCode.toDataURL(qrText, {
 
@@ -897,7 +901,7 @@ async function generateQRLabel(row)
             <div class="left-section">
 
                 <div class="top-text">
-                    ${bucket} - Line ${line}
+                    ${bucket}-${line}
                 </div>
 
                 <div class="top-text">
@@ -912,6 +916,11 @@ async function generateQRLabel(row)
                     ${gender} - ${colour}
                 </div>
 
+                <div class="item-text">
+                    ${item}
+                </div>
+
+                <!-- SIZE + QTY -->
                 <div class="bottom-row">
 
                     <div class="size">
@@ -968,22 +977,14 @@ function openPrintWindow(content, callback = null)
                     margin:0;
                 }
 
-                html, body{
-
+                html,
+                body{
                     margin:0;
                     padding:0;
-
                     font-family:Arial,sans-serif;
                 }
 
-                /* CONTAINER */
-                .print-area{
-
-                    width:50mm;
-
-                }
-
-                /* 1 LABEL */
+                /* LABEL */
                 .label{
 
                     width:50mm;
@@ -996,27 +997,25 @@ function openPrintWindow(content, callback = null)
                     padding:2mm;
 
                     overflow:hidden;
-
-                    page-break-after:always;
-
-                    page-break-inside:avoid;
                 }
 
                 /* LEFT */
                 .left-section{
 
-                    width:58%;
+                    width:60%;
 
                     display:flex;
                     flex-direction:column;
 
-                    justify-content:space-between;
+                    padding-right:1mm;
+
+                    box-sizing:border-box;
                 }
 
                 /* RIGHT */
                 .right-section{
 
-                    width:42%;
+                    width:40%;
 
                     display:flex;
                     flex-direction:column;
@@ -1028,29 +1027,57 @@ function openPrintWindow(content, callback = null)
                 /* TEXT */
                 .top-text{
 
-                    font-size:3.2mm;
-                    line-height:1.1;
+                    font-size:2.6mm;
+
+                    line-height:1.05;
+
+                    word-break:break-word;
                 }
 
+                /* ITEM */
+                .item-text{
+
+                    font-size:2.3mm;
+
+                    line-height:1;
+
+                    font-weight:bold;
+
+                    text-transform:uppercase;
+
+                    word-break:break-word;
+
+                    overflow:hidden;
+
+                    max-height:4.5mm;
+                }
+
+                /* BOTTOM */
                 .bottom-row{
 
+                    margin-top:auto;
+
                     display:flex;
+
                     align-items:flex-end;
 
                     gap:2mm;
                 }
 
+                /* SIZE */
                 .size{
 
-                    font-size:10mm;
+                    font-size:11mm;
+
                     font-weight:bold;
 
-                    line-height:1;
+                    line-height:0.9;
                 }
 
+                /* QTY */
                 .qty{
 
-                    font-size:5mm;
+                    font-size:4.5mm;
 
                     margin-bottom:1mm;
                 }
@@ -1064,6 +1091,7 @@ function openPrintWindow(content, callback = null)
                     object-fit:contain;
                 }
 
+                /* QR TEXT */
                 .qr-text{
 
                     font-size:3mm;
@@ -1111,7 +1139,6 @@ function openPrintWindow(content, callback = null)
 
     }, 3000);
 }
-
 
 </script>
 
