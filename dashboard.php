@@ -186,12 +186,11 @@ while($row = mysqli_fetch_assoc($chartData))
 
                     <div class="col-sm-6 text-right">
                         <h5>
-                            <?= date('d F Y '); ?> | <strong>Shift :</strong><?= $shiftNow; ?>
+                            <?= date('d F Y '); ?> | Shift : <?= $shiftNow; ?>
                         </h5>
                     </div>
                 </div>
             </div>
-
         </section>
 
         <!-- CONTENT -->
@@ -218,7 +217,6 @@ while($row = mysqli_fetch_assoc($chartData))
                         </div>
                     </div>   
                 </div>
-
         </section>
     </div>
 
@@ -252,7 +250,6 @@ new Chart(ctx, {
         labels: <?= json_encode($labels); ?>,
 
         datasets: [
-
             {
                 label: 'Plan',
                 data: <?= json_encode($planData); ?>
@@ -262,9 +259,7 @@ new Chart(ctx, {
                 label: 'Packing',
                 data: <?= json_encode($packingData); ?>
             }
-
         ]
-
     },
 
     options: {
