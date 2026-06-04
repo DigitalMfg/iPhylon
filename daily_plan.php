@@ -89,7 +89,6 @@ $DailyPlan = mysqli_query($conn,"
                       enctype="multipart/form-data">
 
                   <div class="row">
-
                 <!-- MASTER PLANNING -->
                 <div class="col-md-3">
                     <div class="form-group">
@@ -154,10 +153,10 @@ $DailyPlan = mysqli_query($conn,"
                 <!-- TEMPLATE -->
                 <div class="col-md-2">
                     <label>&nbsp;</label>
-                    <a href="./Template/daily_plan_template.xlsx"
+                    <a href="./Template/template_daily_plan.xlsx"
                       class="btn btn-success btn-block">
                         <i class="fas fa-download"></i>
-                        Template
+                        Download Template
                       </a>
                   </div>
                 </div>
@@ -182,7 +181,6 @@ $DailyPlan = mysqli_query($conn,"
 
                 <table id="example1"
                        class="table table-bordered table-striped">
-
                     <thead>
                         <tr>
                           <th>No</th>
@@ -194,63 +192,189 @@ $DailyPlan = mysqli_query($conn,"
                           <th>Line</th>
                           <th>Uploaded By</th>
                           <th>Upload Date</th>
-                          <th width="120">Action</th>
+                          <th style="text-align: center;">Action</th>
                         </tr>
                       </thead>
-
                   <tbody>
 
                       <?php $i=1; ?>
-
                       <?php foreach($DailyPlan as $dp) : ?>
-
                       <tr>
-
                           <td><?= $i++; ?></td>
-
                           <td><?= $dp['tanggal_plan']; ?></td>
-
                           <td><?= $dp['item']; ?></td>
-
                           <td><?= $dp['colour']; ?></td>
-
                           <td><?= $dp['mesin']; ?></td>
-
                           <td><?= $dp['injector']; ?></td>
-
                           <td><?= $dp['line_produksi']; ?></td>
-
                           <td><?= $dp['uploaded_by']; ?></td>
-
                           <td><?= $dp['created_at']; ?></td>
-
                           <td class="text-center">
 
                               <button
                                   class="btn btn-info btn-sm"
                                   data-toggle="modal"
                                   data-target="#detail<?= $dp['id_daily_header']; ?>">
-
                                   <i class="fas fa-eye"></i>
-
                               </button>
 
                               <a href="delete_daily_plan.php?id=<?= $dp['id_daily_header']; ?>"
                                 class="btn btn-danger btn-sm"
                                 onclick="return confirm('Delete Daily Plan ?')">
-
                                   <i class="fas fa-trash"></i>
-
                               </a>
-
                           </td>
-
                       </tr>
-
                       <?php endforeach; ?>
-
                     </tbody>
                 </table>
+
+          <?php foreach($DailyPlan as $dp) : ?>
+
+        <?php
+          $sizes = [
+              '1','1T','2','2T','3','3T',
+              '4','4T','5','5T','6','6T',
+              '7','7T','8','8T','9','9T',
+              '10','10T','11','11T','12','12T',
+              '13','13T','14','15'
+          ];
+        ?>
+
+    <div class="modal fade"
+         id="detail<?= $dp['id_daily_header']; ?>"
+         tabindex="-1">
+
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-info">
+
+                <h5 class="modal-title">
+                    Daily Plan Detail
+                </h5>
+
+                <button type="button"
+                        class="close"
+                        data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- HEADER INFO -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Item :</strong>
+                        <?= $dp['item']; ?>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Colour :</strong>
+                        <?= $dp['colour']; ?>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Mesin :</strong>
+                        <?= $dp['mesin']; ?>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Injector :</strong>
+                        <?= $dp['injector']; ?>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Line :</strong>
+                        <?= $dp['line_produksi']; ?>
+                    </div>
+                </div>
+
+                <?php
+                  $shiftList = [1,2,3];
+                  foreach($shiftList as $shift):
+                ?>
+
+<div class="card card-primary mb-3">
+     <div class="card-header">
+        <h3 class="card-title">
+            SHIFT <?= $shift; ?>
+        </h3>
+    </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center mb-0">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;">
+                                SIZE
+                            </th>
+                            <?php foreach($sizes as $size): ?>
+                                <th><?= $size; ?></th>
+                            <?php endforeach; ?>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <?php
+                        $typeList = [
+                            'MOLD',
+                            'PLAN',
+                            'ACTUAL',
+                            'PACKING'
+                        ];
+                        foreach($typeList as $type):
+                        ?>
+                        <tr>
+                            <th>
+                                <?= $type; ?>
+                            </th>
+
+                            <?php
+                              $total = 0;
+                              foreach($sizes as $size):
+                              $q = mysqli_query($conn,"
+                                  SELECT qty
+                                  FROM tbl_daily_plan_detail
+                                  WHERE id_daily_header = '".$dp['id_daily_header']."'
+                                  AND shift = '$shift'
+                                  AND type = '$type'
+                                  AND size = '$size'
+                                  LIMIT 1
+                              ");
+
+                              $r = mysqli_fetch_assoc($q);
+                              $qty = $r['qty'] ?? 0;
+                              $total += $qty;
+                              ?>
+
+                              <td>
+                                  <?= $qty; ?>
+                              </td>
+                              <?php endforeach; ?>
+                              <td class="font-weight-bold bg-light">
+                                  <?= number_format($total); ?>
+                              </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+
+      <?php endforeach; ?>
+
+          </div>
+              <div class="modal-footer">
+                  <button type="button"
+                          class="btn btn-secondary"
+                          data-dismiss="modal">
+                      Close
+                  </button>
+              </div>
+            </div>
+      </div>
+</div>
+
+<?php endforeach; ?>
               
             </div>
           </div>
