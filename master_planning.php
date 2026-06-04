@@ -378,6 +378,7 @@ $Planning = mysqli_query($conn,"
                     WHERE id_jo_spk = '".$Plan['id_jo_spk']."'
                 ");
                 ?>
+                
 
                 <!-- INFORMASI MASTER -->
                 <div class="row mb-3">
@@ -901,7 +902,7 @@ async function generateQRLabel(row)
             <div class="left-section">
 
                 <div class="top-text">
-                    ${bucket}-${line}
+                    ${bucket} - Line ${line}
                 </div>
 
                 <div class="top-text">
