@@ -30,9 +30,48 @@ if(isset($_POST['upload'])){
 
     // =========================
     // GENERATE JO
+    // Format : YYMMDD-LINE-XXX
+    // Contoh : 260604-01-001
     // =========================
 
-    $no_jo = 'JO-' . date('YmdHis');
+    // Ambil tanggal hari ini
+    $tanggal_jo = date('ymd');
+
+    // Ambil angka dari line produksi
+    // Contoh:
+    // LINE 1 -> 1
+    // Line 02 -> 02
+    // 10 -> 10
+    $line_number = preg_replace('/[^0-9]/', '', $line);
+
+    // Jika tidak ditemukan angka
+    if(empty($line_number)){
+        $line_number = '00';
+    }
+
+    // Format line menjadi 2 digit
+    $line_number = str_pad($line_number, 2, '0', STR_PAD_LEFT);
+
+    $prefix_jo = 'JO-' . date('ymd') . '-' . $line_number;
+
+    $getLastJo = mysqli_query($conn,"
+        SELECT MAX(
+            CAST(
+                SUBSTRING_INDEX(no_jo,'-',-1)
+                AS UNSIGNED
+            )
+        ) AS last_no
+        FROM tbl_jo_spk
+        WHERE no_jo LIKE '".$prefix_jo."-%'
+    ");
+
+    $row = mysqli_fetch_assoc($getLastJo);
+
+    $newSequence = ((int)$row['last_no']) + 1;
+
+    $sequence = str_pad($newSequence, 3, '0', STR_PAD_LEFT);
+
+    $no_jo = $prefix_jo . '-' . $sequence;
 
     $tanggal_upload = date('Y-m-d H:i:s');
 
@@ -233,7 +272,8 @@ if(isset($_POST['upload'])){
 
     }
 
-    header('Location: ../master_planning.php?success=1');
+    $_SESSION['success'] = 'SPK Planning berhasil diupload';
+    header('Location: ../master_planning.php');
     exit;
 
 }

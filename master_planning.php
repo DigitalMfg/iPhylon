@@ -66,39 +66,47 @@ $Planning = mysqli_query($conn,"
         <section class="content-header">
                 <!-- SUCCESS GENERATE -->
             <div class="container-fluid">
-                <?php if(isset($_GET['generate'])) : ?>
+                <?php if(isset($_SESSION['generate'])) : ?>
 
-                <div id="generateAlert"
-                    class="alert alert-success alert-dismissible fade show">
+                    <div id="generateAlert"
+                        class="alert alert-success alert-dismissible fade show">
 
-                    QR Code berhasil digenerate
-
-                </div>
-
-                <?php endif; ?>
-                <!-- DELETE ALERT -->
-                <?php if(isset($_GET['delete'])) : ?>
-
-                    <div id="deleteAlert"
-                         class="alert alert-danger alert-dismissible fade show">
-
-                        Planning berhasil dihapus
+                        <?= $_SESSION['generate']; ?>
 
                     </div>
+
+                    <?php unset($_SESSION['generate']); ?>
+
+                <?php endif; ?>
+
+                <!-- DELETE ALERT -->
+                <?php if(isset($_SESSION['delete'])) : ?>
+
+                    <div id="deleteAlert"
+                        class="alert alert-danger alert-dismissible fade show">
+
+                        <?= $_SESSION['delete']; ?>
+
+                    </div>
+
+                    <?php unset($_SESSION['delete']); ?>
 
                 <?php endif; ?>
 
                 <!-- SUCCESS ALERT -->
-                <?php if(isset($_GET['success'])) : ?>
+            
+                    <?php if(isset($_SESSION['success'])) : ?>
 
-                    <div id="successAlert"
-                         class="alert alert-success alert-dismissible fade show">
+                        <div id="successAlert"
+                            class="alert alert-success alert-dismissible fade show">
 
-                        SPK Planning berhasil diupload
+                            <?= $_SESSION['success']; ?>
 
-                    </div>
+                        </div>
 
-                <?php endif; ?>
+                        <?php unset($_SESSION['success']); ?>
+
+                    <?php endif; ?>
 
                 <div class="row mb-2">
 
@@ -273,6 +281,8 @@ $Planning = mysqli_query($conn,"
 
                                                 $alreadyGenerate = mysqli_num_rows($checkQR);
 
+                                                $qrData = mysqli_fetch_assoc($checkQR);
+
                                                 ?>
 
                                                 <?php if($alreadyGenerate > 0) : ?>
@@ -297,11 +307,22 @@ $Planning = mysqli_query($conn,"
                                                 <?php endif; ?> 
 
                                                 <!-- DELETE -->
-                                                <a href="delete_planning.php?id=<?= $Plan['id_jo_spk']; ?>"
-                                                   class="btn btn-danger btn-sm"
-                                                   onclick="return confirm('Delete this planning?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
+
+                                                <?php if(isset($qrData['status_print']) && $qrData['status_print'] > 0) : ?>
+
+                                                    <button class="btn btn-danger btn-sm" disabled>
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+
+                                                <?php else : ?>
+
+                                                    <a href="delete_planning.php?id=<?= $Plan['id_jo_spk']; ?>"
+                                                    class="btn btn-danger btn-sm"
+                                                    onclick="return confirm('Delete this planning?')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+
+                                                <?php endif; ?>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>

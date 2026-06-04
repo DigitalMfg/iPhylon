@@ -124,6 +124,7 @@ while($row = mysqli_fetch_assoc($data)){
     }
 }
 
-header("Location: master_planning.php?generate=success");
-exit;
+$_SESSION['generate'] = 'QR Code berhasil digenerate';
+    header('Location: master_planning.php');
+    exit;
 ?>

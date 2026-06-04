@@ -1,5 +1,5 @@
 <?php
-session_start();
+// session_start();
 require 'function.php';
 
 if (!isset($_SESSION['login'])) {
@@ -10,33 +10,33 @@ if (!isset($_SESSION['login'])) {
 /* =========================
    SAMPLE KPI QUERY
 ========================= */
+// $totalPlanning = mysqli_fetch_assoc(mysqli_query($conn,"
+//     SELECT COUNT(*) total
+//     FROM tbl_jo_spk
+// "))['total'];
 
-$totalPlanning = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT COUNT(*) total
-    FROM tbl_jo_spk
-"))['total'];
+// $totalScanIn = mysqli_fetch_assoc(mysqli_query($conn,"
+//     SELECT COUNT(*) total
+//     FROM tbl_scan_in
+// "))['total'] ?? 0;
 
-$totalScanIn = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT COUNT(*) total
-    FROM tbl_scan_in
-"))['total'] ?? 0;
+// $totalScanOut = mysqli_fetch_assoc(mysqli_query($conn,"
+//     SELECT COUNT(*) total
+//     FROM tbl_scan_out
+// "))['total'] ?? 0;
 
-$totalScanOut = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT COUNT(*) total
-    FROM tbl_scan_out
-"))['total'] ?? 0;
+// $totalPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
+//     SELECT COUNT(*) total
+//     FROM tbl_spk_size_qty
+//     WHERE status_print='YES'
+// "))['total'] ?? 0;
 
-$totalPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT COUNT(*) total
-    FROM tbl_spk_size_qty
-    WHERE status_print='YES'
-"))['total'] ?? 0;
+// $totalNotPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
+//     SELECT COUNT(*) total
+//     FROM tbl_spk_size_qty
+//     WHERE status_print='NO'
+// "))['total'] ?? 0;
 
-$totalNotPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
-    SELECT COUNT(*) total
-    FROM tbl_spk_size_qty
-    WHERE status_print='NO'
-"))['total'] ?? 0;
 
 ?>
 

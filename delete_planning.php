@@ -81,7 +81,8 @@ if(file_exists($filePath)){
 // =========================
 // REDIRECT
 // =========================
+$_SESSION['delete'] = 'SPK Planning berhasil dihapus';
+    header('Location: master_planning.php');
+    exit;
 
-header('Location: master_planning.php?delete=1');
-exit;
 ?>
