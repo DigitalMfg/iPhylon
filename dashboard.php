@@ -7,38 +7,6 @@ if (!isset($_SESSION['login'])) {
     exit;
 }
 
-<<<<<<< HEAD
-/* =========================
-   SAMPLE KPI QUERY
-========================= */
-// $totalPlanning = mysqli_fetch_assoc(mysqli_query($conn,"
-//     SELECT COUNT(*) total
-//     FROM tbl_jo_spk
-// "))['total'];
-
-// $totalScanIn = mysqli_fetch_assoc(mysqli_query($conn,"
-//     SELECT COUNT(*) total
-//     FROM tbl_scan_in
-// "))['total'] ?? 0;
-
-// $totalScanOut = mysqli_fetch_assoc(mysqli_query($conn,"
-//     SELECT COUNT(*) total
-//     FROM tbl_scan_out
-// "))['total'] ?? 0;
-
-// $totalPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
-//     SELECT COUNT(*) total
-//     FROM tbl_spk_size_qty
-//     WHERE status_print='YES'
-// "))['total'] ?? 0;
-
-// $totalNotPrinted = mysqli_fetch_assoc(mysqli_query($conn,"
-//     SELECT COUNT(*) total
-//     FROM tbl_spk_size_qty
-//     WHERE status_print='NO'
-// "))['total'] ?? 0;
-
-=======
 /*
 |--------------------------------------------------------------------------
 | SHIFT AKTIF
@@ -68,7 +36,6 @@ if(mysqli_num_rows($getShift) > 0)
 */
 
 $chartData = mysqli_query($conn,"
->>>>>>> 5f34badc5a1a86dfe1f24c830d2e8767a7580151
 
 SELECT
 
