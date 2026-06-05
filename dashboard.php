@@ -127,8 +127,12 @@ while($row = mysqli_fetch_assoc($chartData))
     <link rel="stylesheet"
         href="dist/css/adminlte.min.css">
 
-    <!-- ChartJS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Data Label -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+    
 
 </head>
 
@@ -210,6 +214,8 @@ while($row = mysqli_fetch_assoc($chartData))
 const ctx = document.getElementById('productionChart');
 new Chart(ctx, {
 
+    plugins: [ChartDataLabels],
+
     type: 'bar',
 
     data: {
@@ -217,32 +223,51 @@ new Chart(ctx, {
         labels: <?= json_encode($labels); ?>,
 
         datasets: [
-            {
-                label: 'Plan',
-                data: <?= json_encode($planData); ?>
-            },
+           {
+    label: 'Plan',
+    data: <?= json_encode($planData); ?>,
+    backgroundColor: '#ffc107',
+    borderColor: '#ffc107',
+    borderWidth: 1
+},
 
-            {
-                label: 'Packing',
-                data: <?= json_encode($packingData); ?>
-            }
+{
+    label: 'Packing',
+    data: <?= json_encode($packingData); ?>,
+    backgroundColor: '#28a745',
+    borderColor: '#28a745',
+    borderWidth: 1
+}
         ]
     },
 
     options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: true
-            }
-        },
 
-        scales: {
+    onClick: function(evt, elements)
+    {
+        if(elements.length > 0)
+        {
+            let index = elements[0].index;
+            let datasetIndex = elements[0].datasetIndex;
 
-            y: {
-                beginAtZero: true
-            }
+            let line =
+                this.data.labels[index]
+                    .replace('Line ','');
+
+            let type =
+                datasetIndex == 0
+                ? 'PLAN'
+                : 'PACKING';
+
+            loadDetail(line,type);
         }
+    },
+
+    scales: {
+        y: {
+            beginAtZero: true
+        }
+    }
     }
 
 });
@@ -253,7 +278,59 @@ setInterval(function(){
 
 }, 60000);
 
+function loadDetail(line,type)
+{
+    $('#detailChartModal').modal('show');
+
+    $('#detailChartBody').html('Loading...');
+
+    $.ajax({
+
+        url : 'ajax_dashboard_detail.php',
+
+        type : 'POST',
+
+        data : {
+            line : line,
+            type : type,
+            shift : <?= $shiftNow ?>
+        },
+
+        success:function(result)
+        {
+            $('#detailChartBody').html(result);
+        }
+
+    });
+}
+
 </script>
+
+<div class="modal fade" id="detailChartModal">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header bg-info">
+                <h4 class="modal-title">
+                    Production Detail
+                </h4>
+
+                <button type="button"
+                        class="close"
+                        data-dismiss="modal">
+                    &times;
+                </button>
+            </div>
+
+            <div class="modal-body" id="detailChartBody">
+
+                Loading...
+
+            </div>
+
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
