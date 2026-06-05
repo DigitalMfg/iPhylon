@@ -602,10 +602,11 @@ $Planning = mysqli_query($conn,"
 
                                         <!-- DATA -->
                                         <td><?= $d['bucket']; ?></td>
+                                        <td><?= $bundle['line']; ?></td>
                                         <td><?= $d['style']; ?></td>
                                         <td><?= $d['gender']; ?></td>
                                         <td><?= $d['colour']; ?></td>
-                                        <td><?= $d['item']; ?></td>
+                                        <td><?= $bundle['item']; ?></td>
                                         <td><?= $d['po']; ?></td>
                                         <td><?= $d['po_item']; ?></td>
 
