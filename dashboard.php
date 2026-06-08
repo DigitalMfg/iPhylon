@@ -304,33 +304,79 @@ function loadDetail(line,type)
     });
 }
 
+function loadOutputPerHour(line,shift)
+{
+    $('#hourlyModal').modal('show');
+
+    $('#hourlyBody').html('Loading...');
+
+    $.ajax({
+
+        url : 'ajax_output_per_hour.php',
+
+        type : 'POST',
+
+        data : {
+            line : line,
+            shift : shift
+        },
+
+        success:function(result)
+        {
+            $('#hourlyBody').html(result);
+        }
+
+    });
+}
+
 </script>
 
-<div class="modal fade" id="detailChartModal">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
+    <div class="modal fade" id="detailChartModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h4 class="modal-title">
+                        Production Detail
+                    </h4>
 
-            <div class="modal-header bg-info">
-                <h4 class="modal-title">
-                    Production Detail
-                </h4>
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal">
+                        &times;
+                    </button>
+                </div>
 
-                <button type="button"
-                        class="close"
-                        data-dismiss="modal">
-                    &times;
-                </button>
+                <div class="modal-body" id="detailChartBody">
+                    Loading...
+                
+
+                </div>
             </div>
-
-            <div class="modal-body" id="detailChartBody">
-
-                Loading...
-
-            </div>
-
         </div>
     </div>
-</div>
+
+    <div class="modal fade" id="hourlyModal">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h4 class="modal-title">
+                        Output Per Hour
+                    </h4>
+
+                    <button type="button"
+                            class="close"
+                            data-dismiss="modal">
+                        &times;
+                    </button>
+                </div>
+
+                <div class="modal-body"
+                    id="hourlyBody">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

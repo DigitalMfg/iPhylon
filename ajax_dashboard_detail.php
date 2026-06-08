@@ -58,6 +58,8 @@ $sizes = [
     </div>
 </div>
 
+
+
 <?php
 $typeList = [
     'MOLD',
@@ -166,4 +168,19 @@ $typeList = [
             </table>
         </div>
     </div>
+</div>
+<div class="text-left mb-3">
+
+    <button
+        class="btn btn-success"
+        onclick="loadOutputPerHour(
+            <?= $dp['line_produksi']; ?>,
+            <?= $shift; ?>
+        )">
+
+        <i class="fas fa-clock"></i>
+        Output Per Hour
+
+    </button>
+
 </div>
