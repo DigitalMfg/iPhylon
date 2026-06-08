@@ -108,7 +108,24 @@ if (isset($_POST['outSupermarket'])) {
             header("Location: out_sm.php");
             exit;
         }
+        // =========================================
+        // CEK SUDAH IN SM ATAU BELUM
+        // =========================================
+        $cekInSM = mysqli_query($conn,"
+            SELECT *
+            FROM tbl_transaction_scan
+            WHERE qr_code='$qr_code'
+            AND type_scan='IN_SM'
+        ");
 
+        if(mysqli_num_rows($cekInSM) == 0){
+
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'QR BELUM SCAN IN SM';
+
+            header("Location: out_sm.php");
+            exit;
+        }
         // =========================================
         // CEK DOUBLE SCAN
         // =========================================
