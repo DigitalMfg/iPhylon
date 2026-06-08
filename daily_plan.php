@@ -302,11 +302,13 @@ $DailyPlan = mysqli_query($conn,"
                 <table class="table table-bordered text-center mb-0">
                     <thead>
                         <tr>
-                            <th style="text-align:center;">
+                            <th style="text-align:center; color:white; background-color: #00A8B8;">
                                 SIZE
                             </th>
                             <?php foreach($sizes as $size): ?>
-                                <th><?= $size; ?></th>
+                                <th style="text-align:center; color:white; background-color: #00A8B8;">
+                                    <?= $size; ?>
+                                </th>
                             <?php endforeach; ?>
                             <th>TOTAL</th>
                         </tr>
@@ -345,7 +347,7 @@ $DailyPlan = mysqli_query($conn,"
                               $total += $qty;
                               ?>
 
-                              <td>
+                              <td >
                                   <?= $qty; ?>
                               </td>
                               <?php endforeach; ?>
