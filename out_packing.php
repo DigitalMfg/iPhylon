@@ -15,6 +15,7 @@ date_default_timezone_set("Asia/Jakarta");
 $success = false;
 $error   = false;
 $message = "";
+$status  = "";
 
 // =========================================
 // AMBIL MESSAGE DARI SESSION
@@ -26,6 +27,7 @@ if(isset($_SESSION['message'])){
 
     unset($_SESSION['message']);
     unset($_SESSION['status']);
+    
 }
 
 if (isset($_POST['outPacking'])) {
@@ -493,30 +495,46 @@ if (isset($_POST['outPacking'])) {
 
 
 
-<?php if($status != ''): ?>
+<?php if(!empty($status)): ?>
 
 <script>
 
-Swal.fire({
-    toast: true,
-    position: 'top',
-    icon: '<?php echo $status ?>',
-    title: '<?php echo $message ?>',
-    showConfirmButton: false,
-    timer: 1500,
-    timerProgressBar: true
+document.addEventListener('DOMContentLoaded', function(){
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: '<?= $status ?>',
+        title: '<?= $message ?>',
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true
+    });
+
+    let qr = document.getElementById('qr_code');
+
+    if(qr){
+        qr.value = '';
+        qr.focus();
+    }
+
+    // SUARA SUCCESS
+    <?php if($status == 'success'): ?>
+        new Audio('assets/sound/success.mp3').play();
+    <?php endif; ?>
+
+    // SUARA ERROR / WARNING
+    <?php if($status == 'error' || $status == 'warning'): ?>
+        new Audio('assets/sound/error.mp3').play();
+    <?php endif; ?>
+
 });
-
-setTimeout(() => {
-
-    document.getElementById('qr_code').value = '';
-    document.getElementById('qr_code').focus();
-
-}, 2000);
 
 </script>
 
 <?php endif; ?>
+
+
 
 </body>
 </html>

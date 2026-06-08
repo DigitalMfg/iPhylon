@@ -273,10 +273,8 @@ new Chart(ctx, {
 });
 
 setInterval(function(){
-
     location.reload();
-
-}, 60000);
+}, 120000);
 
 function loadDetail(line,type)
 {
