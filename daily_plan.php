@@ -58,6 +58,13 @@ $DailyPlan = mysqli_query($conn,"
         </div>
         <?php endif; ?>
 
+        <?php if(isset($_GET['delete'])) : ?>
+        <div id="deleteAlert"
+            class="alert alert-danger alert-dismissible fade show">
+            Daily Plan berhasil dihapus
+        </div>
+        <?php endif; ?>
+
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1>Daily Production Plan</h1>
@@ -342,18 +349,44 @@ $DailyPlan = mysqli_query($conn,"
                             <?php
                               $total = 0;
                               foreach($sizes as $size):
-                              $q = mysqli_query($conn,"
-                                  SELECT qty
-                                  FROM tbl_daily_plan_detail
-                                  WHERE id_daily_header = '".$dp['id_daily_header']."'
-                                  AND shift = '$shift'
-                                  AND type = '$type'
-                                  AND size = '$size'
-                                  LIMIT 1
-                              ");
 
-                              $r = mysqli_fetch_assoc($q);
-                              $qty = $r['qty'] ?? 0;
+                              if($type == 'PACKING')
+                              {
+                                  $qPacking = mysqli_query($conn,"
+                                      SELECT
+                                          SUM(m.qty) total_qty
+                                      FROM tbl_transaction_scan t
+
+                                      INNER JOIN tbl_master_barcode m
+                                          ON m.qr_code = t.qr_code
+
+                                      WHERE t.type_scan = 'OUT_PACKING'
+                                      AND t.shift = '$shift'
+                                      AND t.cost_center = 'Line ".$dp['line_produksi']."'
+                                      AND DATE(t.date_scan) = '".$dp['tanggal_plan']."'
+                                      AND m.size = '$size'
+                                  ");
+
+                                  $rPacking = mysqli_fetch_assoc($qPacking);
+
+                                  $qty = $rPacking['total_qty'] ?? 0;
+                              }
+                              else
+                              {
+                                  $q = mysqli_query($conn,"
+                                      SELECT qty
+                                      FROM tbl_daily_plan_detail
+                                      WHERE id_daily_header = '".$dp['id_daily_header']."'
+                                      AND shift = '$shift'
+                                      AND type = '$type'
+                                      AND size = '$size'
+                                      LIMIT 1
+                                  ");
+
+                                  $r = mysqli_fetch_assoc($q);
+
+                                  $qty = $r['qty'] ?? 0;
+                              }
                               $total += $qty;
                               ?>
 
@@ -479,13 +512,21 @@ $(document).ready(function () {
 
 <script>
 setTimeout(function(){
+
     $('#successAlert').fadeOut('slow');
+    $('#deleteAlert').fadeOut('slow');
+
 }, 2000);
 </script>
 
 <script>
-if(window.location.href.indexOf("?success=1") > -1){
-    window.history.replaceState({}, document.title, window.location.pathname);
+if(
+    window.location.href.indexOf("?success=1") > -1 ||
+    window.location.href.indexOf("?delete=1") > -1
+){
+    setTimeout(function(){
+        window.location.href = 'daily_plan.php';
+    }, 2000);
 }
 </script>
 
