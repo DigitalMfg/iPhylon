@@ -2,9 +2,13 @@
 require 'function.php';
 
 $DailyPlan = mysqli_query($conn,"
-    SELECT *
-    FROM tbl_daily_plan_header
-    ORDER BY created_at DESC
+    SELECT 
+    dph.*,
+    js.no_jo
+  FROM tbl_daily_plan_header dph
+  INNER JOIN tbl_jo_spk js
+      ON dph.id_jo_spk = js.id_jo_spk
+  ORDER BY dph.created_at DESC;
 ");
 ?>
 
@@ -25,6 +29,10 @@ $DailyPlan = mysqli_query($conn,"
   <link rel="stylesheet" href="plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
   <link rel="stylesheet" href="plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+
+  <!-- Select2 -->
+  <link rel="stylesheet" href="plugins/select2/css/select2.min.css">
+  <link rel="stylesheet" href="plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
 
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
@@ -101,7 +109,7 @@ $DailyPlan = mysqli_query($conn,"
                     <div class="form-group">
                         <label>Master Planning</label>
                         <select name="id_jo_spk"
-                                class="form-control"
+                                class="form-control select2bs4"
                                 required>
                             <option value="">
                                 -- Select Planning --
@@ -191,6 +199,7 @@ $DailyPlan = mysqli_query($conn,"
                     <thead>
                         <tr>
                           <th>No</th>
+                          <th>Jo</th>
                           <th>Tanggal Plan</th>
                           <th>Item</th>
                           <th>Colour</th>
@@ -208,6 +217,7 @@ $DailyPlan = mysqli_query($conn,"
                       <?php foreach($DailyPlan as $dp) : ?>
                       <tr>
                           <td><?= $i++; ?></td>
+                          <td><?= $dp['no_jo']; ?></td>
                           <td><?= $dp['tanggal_plan']; ?></td>
                           <td><?= $dp['item']; ?></td>
                           <td><?= $dp['colour']; ?></td>
@@ -309,11 +319,13 @@ $DailyPlan = mysqli_query($conn,"
                 <table class="table table-bordered text-center mb-0">
                     <thead>
                         <tr>
-                            <th style="text-align:center;">
+                            <th style="text-align:center; color:white; background-color: #00A8B8;">
                                 SIZE
                             </th>
                             <?php foreach($sizes as $size): ?>
-                                <th><?= $size; ?></th>
+                                <th style="text-align:center; color:white; background-color: #00A8B8;">
+                                    <?= $size; ?>
+                                </th>
                             <?php endforeach; ?>
                             <th>TOTAL</th>
                         </tr>
@@ -378,7 +390,7 @@ $DailyPlan = mysqli_query($conn,"
                               $total += $qty;
                               ?>
 
-                              <td>
+                              <td >
                                   <?= $qty; ?>
                               </td>
                               <?php endforeach; ?>
@@ -451,6 +463,9 @@ $DailyPlan = mysqli_query($conn,"
 <script src="plugins/datatables-buttons/js/buttons.print.min.js"></script>
 <script src="plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
 
+<!-- Select2 -->
+<script src="plugins/select2/js/select2.full.min.js"></script>
+
 <!-- AdminLTE -->
 <script src="dist/js/adminlte.min.js"></script>
 
@@ -463,6 +478,18 @@ $('.custom-file-input').on('change', function () {
   $(this).next('.custom-file-label').html(fileName);
 
 });
+</script>
+
+<!-- SELECT2 -->
+<script>
+/* SELECT2 */
+    $('.select2bs4').select2({
+
+        theme: 'bootstrap4',
+        width: '100%',
+        minimumInputLength: 1
+
+    });
 </script>
 
 <!-- DATATABLE -->
