@@ -91,6 +91,21 @@ if (isset($_POST['outPacking'])) {
         }
 
         // =========================================
+        // VALIDASI LINE USER VS LINE QR
+        // =========================================
+
+        $lineBarcode = trim($dataBarcode['line']);
+
+        if(strtolower(trim($cost_center)) != strtolower('Line '.$lineBarcode)){
+
+            $_SESSION['status']  = 'error';
+            $_SESSION['message'] = 'QR BUKAN UNTUK '.$cost_center;
+
+            header("Location: out_packing.php");
+            exit;
+        }
+
+        // =========================================
         // CEK DOUBLE SCAN
         // =========================================
         $cekDouble = mysqli_query($conn,"
