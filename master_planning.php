@@ -1,6 +1,7 @@
 <?php
 require 'function.php';
 
+
 $Planning = mysqli_query($conn,"
     SELECT *
     FROM tbl_jo_spk
@@ -602,11 +603,11 @@ $Planning = mysqli_query($conn,"
 
                                         <!-- DATA -->
                                         <td><?= $d['bucket']; ?></td>
-                                        <td><?= $bundle['line']; ?></td>
+                                        <td><?= $Plan['line_produksi']; ?></td>
                                         <td><?= $d['style']; ?></td>
                                         <td><?= $d['gender']; ?></td>
                                         <td><?= $d['colour']; ?></td>
-                                        <td><?= $bundle['item']; ?></td>
+                                        <td><?= $Plan['item']; ?></td>
                                         <td><?= $d['po']; ?></td>
                                         <td><?= $d['po_item']; ?></td>
 
