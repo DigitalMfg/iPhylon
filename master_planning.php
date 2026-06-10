@@ -498,7 +498,8 @@ $Planning = mysqli_query($conn,"
                                     <td>
                                         <input type="checkbox"
                                             class="row-check-<?= $Plan['id_jo_spk']; ?>"
-                                            data-plan="<?= $Plan['id_jo_spk']; ?>">
+                                            data-plan="<?= $Plan['id_jo_spk']; ?>"
+                                            <?= $bundle['status_print'] == '1' ? 'disabled' : '' ?>>
                                     </td>
 
                                     <!-- DATA -->
@@ -539,34 +540,23 @@ $Planning = mysqli_query($conn,"
                                             <button type="button"
                                                     class="btn btn-sm btn-danger"
                                                     disabled>
-
                                                 Can't Print
-
-                                            </button>
-
-                                        <?php elseif($bundle['status_print'] == '0') : ?>
-
-                                            <button type="button"
-                                                    class="btn btn-sm btn-success btn-print"
-                                                    data-id="<?= $bundle['id_barcode']; ?>"
-                                                    onclick="printSingleQR(this)">
-
-                                                Print
-
                                             </button>
 
                                         <?php else : ?>
 
                                             <button type="button"
-                                                    class="btn btn-sm btn-secondary"
-                                                    disabled>
+                                                    class="btn btn-sm <?= $bundle['status_print'] == '1' ? 'btn-secondary' : 'btn-success' ?> btn-print"
+                                                    data-id="<?= $bundle['id_barcode']; ?>"
+                                                    onclick="printSingleQR(this)"
+                                                    <?= $bundle['status_print'] == '1' ? 'disabled' : '' ?>>
 
-                                                Printed
+                                                <?= $bundle['status_print'] == '1' ? 'Printed' : 'Print' ?>
 
                                             </button>
 
                                         <?php endif; ?>
-
+                                            <?php var_dump($bundle); ?>
                                     </td>
 
                                 </tr>
@@ -599,7 +589,8 @@ $Planning = mysqli_query($conn,"
                                         <td>
                                             <input type="checkbox"
                                                 class="row-check-<?= $Plan['id_jo_spk']; ?>"
-                                                data-plan="<?= $Plan['id_jo_spk']; ?>">
+                                                data-plan="<?= $Plan['id_jo_spk']; ?>"
+                                                <?= $bundle['status_print'] == '1' ? 'disabled' : '' ?>>
                                         </td>
 
                                         <!-- DATA -->
@@ -786,6 +777,22 @@ function updateHeaderCheckbox(planId)
         disabledCheckboxes.length
     );
 }
+
+document.addEventListener('DOMContentLoaded', function()
+{
+    document
+        .querySelectorAll('[id^="checkAll"]')
+        .forEach(function(header)
+        {
+            let planId =
+                header.id.replace(
+                    'checkAll',
+                    ''
+                );
+
+            updateHeaderCheckbox(planId);
+        });
+});
 
 </script>
 
