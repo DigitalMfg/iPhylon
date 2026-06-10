@@ -500,7 +500,9 @@ $Planning = mysqli_query($conn,"
                                         <input type="checkbox"
                                             class="row-check-<?= $Plan['id_jo_spk']; ?>"
                                             data-plan="<?= $Plan['id_jo_spk']; ?>"
-                                            <?= $bundle['status_print'] == '1' ? 'disabled' : '' ?>>
+                                            <?= isset($bundle['status_print']) && $bundle['status_print'] == '1'
+                                                ? 'disabled'
+                                                : '' ?>>
                                     </td>
 
                                     <!-- DATA -->
@@ -557,7 +559,6 @@ $Planning = mysqli_query($conn,"
                                             </button>
 
                                         <?php endif; ?>
-                                            <?php var_dump($bundle); ?>
                                     </td>
 
                                 </tr>
@@ -591,7 +592,9 @@ $Planning = mysqli_query($conn,"
                                             <input type="checkbox"
                                                 class="row-check-<?= $Plan['id_jo_spk']; ?>"
                                                 data-plan="<?= $Plan['id_jo_spk']; ?>"
-                                                <?= $bundle['status_print'] == '1' ? 'disabled' : '' ?>>
+                                                <?= isset($bundle['status_print']) && $bundle['status_print'] == '1'
+                                                    ? 'disabled'
+                                                    : '' ?>>
                                         </td>
 
                                         <!-- DATA -->
