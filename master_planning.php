@@ -498,7 +498,8 @@ $Planning = mysqli_query($conn,"
                                     <!-- CHECKBOX -->
                                     <td>
                                         <input type="checkbox"
-                                            class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                            class="row-check-<?= $Plan['id_jo_spk']; ?>"
+                                            data-plan="<?= $Plan['id_jo_spk']; ?>">
                                     </td>
 
                                     <!-- DATA -->
@@ -598,7 +599,8 @@ $Planning = mysqli_query($conn,"
                                         <!-- CHECKBOX -->
                                         <td>
                                             <input type="checkbox"
-                                                class="row-check-<?= $Plan['id_jo_spk']; ?>">
+                                                class="row-check-<?= $Plan['id_jo_spk']; ?>"
+                                                data-plan="<?= $Plan['id_jo_spk']; ?>">
                                         </td>
 
                                         <!-- DATA -->
@@ -717,44 +719,79 @@ $('.custom-file-input').on('change', function () {
 
 <!-- TOGGLE ALL CHECKBOXES -->
 <script>
-
+ // toggle all checkboxes in the modal
 function toggleAll(planId)
 {
-    let checkAll = document.getElementById('checkAll' + planId);
+    let checkAll =
+        document.getElementById(
+            'checkAll' + planId
+        );
 
     let checkboxes =
-        document.querySelectorAll('.row-check-' + planId);
+        document.querySelectorAll(
+            '.row-check-' + planId +
+            ':not(:disabled)'
+        );
 
-    checkboxes.forEach(function(cb) {
+    checkboxes.forEach(function(cb)
+    {
         cb.checked = checkAll.checked;
     });
+}
+
+// Update header checkbox state based on row checkboxes
+function updateHeaderCheckbox(planId)
+{
+    let checkAll =
+        document.getElementById(
+            'checkAll' + planId
+        );
+
+    let allCheckboxes =
+        document.querySelectorAll(
+            '.row-check-' + planId
+        );
+
+    let disabledCheckboxes =
+        document.querySelectorAll(
+            '.row-check-' + planId + ':disabled'
+        );
+
+    console.log(
+        'Total:',
+        allCheckboxes.length
+    );
+
+    console.log(
+        'Disabled:',
+        disabledCheckboxes.length
+    );
+
+    if(
+        allCheckboxes.length > 0 &&
+        allCheckboxes.length ===
+        disabledCheckboxes.length
+    )
+    {
+        checkAll.checked = false;
+        checkAll.disabled = true;
+    }
+
+    console.log(
+    'Total',
+        allCheckboxes.length
+    );
+
+    console.log(
+        'Disabled',
+        disabledCheckboxes.length
+    );
 }
 
 </script>
 
 <!-- PRINT SINGLE QR -->
  <script>
-
-/* =========================================
-   SELECT ALL
-========================================= */
-
-function toggleAll(planId)
-{
-    let checkAll =
-        document.getElementById('checkAll' + planId);
-
-    let checkboxes =
-        document.querySelectorAll(
-            '.row-check-' + planId
-        );
-
-    checkboxes.forEach(function(cb){
-
-        cb.checked = checkAll.checked;
-
-    });
-}
 
 /* =========================================
    PRINT SINGLE QR
@@ -799,6 +836,32 @@ async function printSingleQR(button)
         );
 
         button.innerHTML = 'Printed';
+        let checkbox =
+            row.querySelector('input[type="checkbox"]');
+
+        if(checkbox)
+        {
+            checkbox.disabled = true;
+
+               if(checkbox)
+            {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+
+                updateHeaderCheckbox(
+                    checkbox.dataset.plan
+                );
+            }
+            checkbox.checked = false;
+
+            console.log(
+                row.querySelectorAll('input[type="checkbox"]').length
+            );
+
+            updateHeaderCheckbox(
+                checkbox.dataset.plan
+            );
+        }
 
     });
 }
@@ -874,7 +937,19 @@ async function printSelectedRows(planId)
                 );
 
                 button.innerHTML = 'Printed';
+                let checkbox =
+                    item.row.querySelector(
+                        'input[type="checkbox"]'
+                    );
+
+                if(checkbox)
+                {
+                    checkbox.disabled = true;
+                    checkbox.checked = false;
+                }
             }
+
+            updateHeaderCheckbox(planId);
         }
 
     });
