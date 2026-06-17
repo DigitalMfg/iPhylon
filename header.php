@@ -326,6 +326,34 @@ $scan_type = $_SESSION['scan_type'];
 
         <?php endif; ?>
 
+        <li class="nav-header">
+          DATA
+        </li>
+
+        <li class="nav-item">
+          <a href="#"
+          class="nav-link">
+
+            <i class="nav-icon fas fa-book"></i>
+            <p>
+              Report
+              <i class="fas fa-angle-left right"></i>
+            </p>
+          </a>
+
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="report_minus_packing.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Minus by Colour
+                </p>
+              </a>
+            </li>
+          </ul>
+        </li>
+
         <!-- LOGOUT -->
         <li class="nav-header">
           LOGOUT
