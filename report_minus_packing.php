@@ -267,7 +267,7 @@ Filter Report
 <div class="row">
 
 <div class="col-md-3">
-<label>Bucket From</label>
+<label>Bucket From</label> <label class="text-danger">*</label>
 
 <select class="form-control select2bs4"
         name="bucket_from"
@@ -289,7 +289,7 @@ value="<?= $bucket['bucket']; ?>"
 </div>
 
 <div class="col-md-3">
-<label>Bucket To</label>
+<label>Bucket To</label> <label class="text-danger">*</label>
 
 <select class="form-control select2bs4"
         name="bucket_to"
@@ -459,9 +459,13 @@ value="<?= $colour['colour']; ?>"
 
 </div>
 
-<footer class="main-footer">
-<strong>Mfg Project Officer</strong>
-</footer>
+<!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block">
+      <b>Version</b> 1.0.0
+    </div>2024 
+    <strong><a href="#">Mfg Project Officer</a>.</strong> All rights reserved.
+  </footer>
 
 <script src="plugins/jquery/jquery.min.js"></script>
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -481,7 +485,7 @@ $(function(){
 
     $('.select2bs4').select2({
         theme: 'bootstrap4',
-        placeholder: 'Pilih Data',
+        placeholder: 'Select Data',
         allowClear: true
     });
 

@@ -336,6 +336,9 @@ Register New User
           <option value="Line 8">
             Line 8
           </option>
+          <option value="Supermarket">
+            Supermarket
+          </option>
           
         </select>
       </div>
@@ -611,6 +614,11 @@ class="table table-bordered table-striped">
                                 <?= ($MU['cost_center'] == 'Line 8') ? 'selected' : ''; ?>>
                                 Line 8
                             </option>
+                            <option
+                                value="Supermarket"
+                                <?= ($MU['cost_center'] == 'Supermarket') ? 'selected' : ''; ?>>
+                                Supermarket
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -634,15 +642,10 @@ class="table table-bordered table-striped">
                         Update User
 
                     </button>
-
                 </div>
-
             </form>
-
         </div>
-
     </div>
-
 </div>
 
 <?php endforeach; ?>
