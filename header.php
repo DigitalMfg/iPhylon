@@ -351,6 +351,15 @@ $scan_type = $_SESSION['scan_type'];
                 </p>
               </a>
             </li>
+            <li class="nav-item">
+              <a href="report_stock_sm_ip.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Stock SM IP
+                </p>
+              </a>
+            </li>
           </ul>
         </li>
 

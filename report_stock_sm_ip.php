@@ -39,45 +39,80 @@ if(count($bucketList) > 0){
         $where .= " AND colour='$colour_filter'";
     }
 
-    $sql = mysqli_query($conn,"
+    $sql = mysqli_query($conn, "
 
         SELECT
-
+            p.style,
             p.item,
             p.colour,
+            p.gender,
             p.bucket,
-            p.qty_planning,
 
-            COALESCE(o.qty_out,0) AS qty_out
+            p.qty_order,
+
+            COALESCE(i.qty_in,0)  AS qty_in,
+            COALESCE(o.qty_out,0) AS qty_out,
+
+            (
+                COALESCE(i.qty_in,0) -
+                COALESCE(o.qty_out,0)
+            ) AS balance
 
         FROM
-
         (
             SELECT
-
+                style,
                 item,
                 colour,
+                gender,
                 bucket,
 
-                SUM(qty) AS qty_planning
+                SUM(qty) AS qty_order
 
             FROM tbl_master_barcode
 
             WHERE bucket BETWEEN '$bucket_from'
             AND '$bucket_to'
             $where
+
             GROUP BY
+                style,
                 item,
                 colour,
+                gender,
                 bucket
 
         ) p
 
         LEFT JOIN
-
         (
             SELECT
+                mb.item,
+                mb.colour,
+                mb.bucket,
 
+                SUM(mb.qty) AS qty_in
+
+            FROM tbl_transaction_scan ts
+
+            INNER JOIN tbl_master_barcode mb
+                ON ts.qr_code = mb.qr_code
+
+            WHERE ts.type_scan = 'IN_SM'
+
+            GROUP BY
+                mb.item,
+                mb.colour,
+                mb.bucket
+
+        ) i
+            ON p.item   = i.item
+            AND p.colour = i.colour
+            AND p.bucket = i.bucket
+
+        LEFT JOIN
+        (
+            SELECT
                 mb.item,
                 mb.colour,
                 mb.bucket,
@@ -89,7 +124,7 @@ if(count($bucketList) > 0){
             INNER JOIN tbl_master_barcode mb
                 ON ts.qr_code = mb.qr_code
 
-            WHERE ts.type_scan='OUT_PACKING'
+            WHERE ts.type_scan = 'OUT_SM'
 
             GROUP BY
                 mb.item,
@@ -97,10 +132,9 @@ if(count($bucketList) > 0){
                 mb.bucket
 
         ) o
-
-        ON p.item = o.item
-        AND p.colour = o.colour
-        AND p.bucket = o.bucket
+            ON p.item   = o.item
+            AND p.colour = o.colour
+            AND p.bucket = o.bucket
 
         ORDER BY
             p.item,
@@ -113,27 +147,22 @@ if(count($bucketList) > 0){
 
     while($row = mysqli_fetch_assoc($sql)){
 
-        $item   = $row['item'];
-        $colour = $row['colour'];
+        $key = $row['item'].'||'.$row['colour'].'||'.$row['bucket'];
 
-        $key = $item.'||'.$colour;
+        $reportData[$key] = [
 
-        if(!isset($reportData[$key])){
+            'style'     => $row['style'],
+            'item'      => $row['item'],
+            'gender'    => $row['gender'],
+            'colour'    => $row['colour'],
+            'bucket'    => $row['bucket'],
 
-            $reportData[$key] = [
-                'item' => $item,
-                'colour' => $colour,
-                'total' => 0
-            ];
-        }
+            'qty_order' => $row['qty_order'],
+            'qty_in'    => $row['qty_in'],
+            'qty_out'   => $row['qty_out'],
+            'balance'   => $row['balance']
 
-        $minus = $row['qty_planning'] - $row['qty_out'];
-        if($minus <= 0){continue;}
-
-        $reportData[$key][$row['bucket']] = $minus;
-
-        $reportData[$key]['total'] += $minus;
-
+        ];
     }
 
 }
@@ -201,7 +230,7 @@ $listColour = mysqli_query($conn,"
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>iPhylon | Report Minus Packing</title>
+<title>iPhylon | Report Stock SM IP</title>
 
 <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 
@@ -229,7 +258,7 @@ $listColour = mysqli_query($conn,"
                 <div class="col-sm-6">
                 <h1>
                 <i class="fas fa-chart-bar"></i>
-                Report Minus Packing
+                Report Stock SM IP
                 </h1>
             </div>
 
@@ -239,7 +268,7 @@ $listColour = mysqli_query($conn,"
                     <a href="index.php">Home</a>
                     </li>
                     <li class="breadcrumb-item active">
-                    Report Minus Packing
+                    Report Stock SM IP
                     </li>
                 </ol>
             </div>
@@ -386,7 +415,7 @@ value="<?= $colour['colour']; ?>"
 <button type="button"
         class="btn btn-secondary"
         style="width:100px;"
-        onclick="window.location='report_minus_packing.php'">
+        onclick="window.location='report_stock_sm_ip.php'">
     <i class="fas fa-sync-alt"></i>
     Reset
 </button>
@@ -400,7 +429,7 @@ value="<?= $colour['colour']; ?>"
     <div class="card-header">
 
         <h3 class="card-title">
-            Detail Minus Packing
+            Detail Stock SM IP
         </h3>
 
     </div>
@@ -414,40 +443,48 @@ value="<?= $colour['colour']; ?>"
                    class="table table-bordered table-striped">
 
                 <thead>
-
                     <tr>
+                        <th>No</th>
+                        <th>Style</th>
                         <th>Item</th>
+                        <th>Gender</th>
                         <th>Colour</th>
-
-                        <?php foreach($bucketList as $bucket): ?>
-                        <th class="text-center"><?= $bucket ?></th>
-                        <?php endforeach; ?>
-
-                        <th>Total</th>
+                        <th>Bucket</th>
+                        <th>Qty Order</th>
+                        <th>Scan In</th>
+                        <th>Scan Out</th>
+                        <th>Balance</th>
                     </tr>
-
                 </thead>
 
                 <tbody>
+                    <?php $no=1; ?>
                     <?php foreach($reportData as $row): ?>
                     <tr>
+                        <td><?= $no++ ?></td>
+                        <td><?= $row['style'] ?></td>
                         <td><?= $row['item'] ?></td>
+                        <td><?= $row['gender'] ?></td>
                         <td><?= $row['colour'] ?></td>
-                        <?php foreach($bucketList as $bucket): ?>
+                        <td><?= $row['bucket'] ?></td>
 
-                        <?php
-                        $value = $row[$bucket] ?? 0;
-                        ?>
-                        <td class="<?= $value > 0 ? 'bg-danger' : '' ?>">
-                            <?= $value ?>
+                        <td class="text-end">
+                            <?= number_format($row['qty_order']) ?>
                         </td>
-                        <?php endforeach; ?>
-                        <td class="font-weight-bold">
-                        <?= $row['total'] ?>
+
+                        <td class="text-end">
+                            <?= number_format($row['qty_in']) ?>
+                        </td>
+
+                        <td class="text-end">
+                            <?= number_format($row['qty_out']) ?>
+                        </td>
+
+                        <td class="text-end font-weight-bold">
+                            <?= number_format($row['balance']) ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
-
                 </tbody>
             </table>
         </div>
@@ -502,7 +539,7 @@ $(function(){
                 extend: 'excelHtml5',
                 text: 'Export Excel',
                 className: 'btn btn-success btn-sm',
-                title: 'Report Minus Packing'
+                title: 'Report Stock SM IP'
             }
         ]
     });
