@@ -1,171 +1,128 @@
 <?php
-// session_start();
 require 'function.php';
 
 $bucket_from = $_GET['bucket_from'] ?? '';
 $bucket_to   = $_GET['bucket_to'] ?? '';
 $item_filter = $_GET['item'] ?? '';
 $colour_filter = $_GET['colour'] ?? '';
-
-$bucketList = [];
-
-if($bucket_from != '' && $bucket_to != ''){
-
-    $getBucket = mysqli_query($conn,"
-        SELECT DISTINCT bucket
-        FROM tbl_spk_detail
-        WHERE bucket >= '$bucket_from'
-        AND bucket <= '$bucket_to'
-        ORDER BY bucket
-    ");
-    
-    while($row = mysqli_fetch_assoc($getBucket)){
-        $bucketList[] = $row['bucket'];
-    }
-
-}
+$style_filter  = $_GET['style'] ?? '';
+$gender_filter = $_GET['gender'] ?? '';
+$size_filter   = $_GET['size'] ?? '';
+$type_scan    = $_GET['type_scan'] ?? '';
 
 $reportData = [];
+$sizeList = [];
 
-if(count($bucketList) > 0){
+$isSearch = false;
 
-    $where = "";
+/* =========================
+   BUILD WHERE
+========================= */
+$where = "WHERE 1=1";
 
-    if($item_filter != ''){
-        $where .= " AND item='$item_filter'";
-    }
+if($bucket_from != '' && $bucket_to != ''){
+    $where .= " AND mb.bucket BETWEEN '$bucket_from' AND '$bucket_to'";
+    $isSearch = true;
+}
 
-    if($colour_filter != ''){
-        $where .= " AND colour='$colour_filter'";
-    }
+if($type_scan != ''){
+    $where .= " AND ts.type_scan = '$type_scan'";
+    $isSearch = true;
+}
+
+if($item_filter != ''){
+    $where .= " AND mb.item = '$item_filter'";
+    $isSearch = true;
+}
+
+if($colour_filter != ''){
+    $where .= " AND mb.colour = '$colour_filter'";
+    $isSearch = true;
+}
+
+if($style_filter != ''){
+    $where .= " AND mb.style = '$style_filter'";
+    $isSearch = true;
+}
+
+if($gender_filter != ''){
+    $where .= " AND mb.gender = '$gender_filter'";
+    $isSearch = true;
+}
+
+if($size_filter != ''){
+    $where .= " AND mb.size = '$size_filter'";
+    $isSearch = true;
+}
+
+/* =========================
+   QUERY ONLY IF SEARCH
+========================= */
+if($isSearch){
 
     $sql = mysqli_query($conn, "
-
         SELECT
-            p.style,
-            p.item,
-            p.colour,
-            p.gender,
-            p.bucket,
-
-            p.qty_order,
-
-            COALESCE(i.qty_in,0)  AS qty_in,
-            COALESCE(o.qty_out,0) AS qty_out,
-
-            (
-                COALESCE(i.qty_in,0) -
-                COALESCE(o.qty_out,0)
-            ) AS balance
-
-        FROM
-        (
-            SELECT
-                style,
-                item,
-                colour,
-                gender,
-                bucket,
-
-                SUM(qty) AS qty_order
-
-            FROM tbl_master_barcode
-
-            WHERE bucket BETWEEN '$bucket_from'
-            AND '$bucket_to'
-            $where
-
-            GROUP BY
-                style,
-                item,
-                colour,
-                gender,
-                bucket
-
-        ) p
-
-        LEFT JOIN
-        (
-            SELECT
-                mb.item,
-                mb.colour,
-                mb.bucket,
-
-                SUM(mb.qty) AS qty_in
-
-            FROM tbl_transaction_scan ts
-
-            INNER JOIN tbl_master_barcode mb
-                ON ts.qr_code = mb.qr_code
-
-            WHERE ts.type_scan = 'IN_SM'
-
-            GROUP BY
-                mb.item,
-                mb.colour,
-                mb.bucket
-
-        ) i
-            ON p.item   = i.item
-            AND p.colour = i.colour
-            AND p.bucket = i.bucket
-
-        LEFT JOIN
-        (
-            SELECT
-                mb.item,
-                mb.colour,
-                mb.bucket,
-
-                SUM(mb.qty) AS qty_out
-
-            FROM tbl_transaction_scan ts
-
-            INNER JOIN tbl_master_barcode mb
-                ON ts.qr_code = mb.qr_code
-
-            WHERE ts.type_scan = 'OUT_SM'
-
-            GROUP BY
-                mb.item,
-                mb.colour,
-                mb.bucket
-
-        ) o
-            ON p.item   = o.item
-            AND p.colour = o.colour
-            AND p.bucket = o.bucket
-
+            mb.style,
+            mb.item,
+            mb.gender,
+            mb.colour,
+            mb.bucket,
+            mb.size,
+            COALESCE(SUM(mb.qty),0) AS qty
+        FROM tbl_transaction_scan ts
+        LEFT JOIN tbl_master_barcode mb
+            ON ts.qr_code = mb.qr_code
+        $where
+        GROUP BY
+            mb.style,
+            mb.item,
+            mb.gender,
+            mb.colour,
+            mb.bucket,
+            mb.size
         ORDER BY
-            p.item,
-            p.colour,
-            p.bucket
-
-        ");
-
-        
+            mb.style,
+            mb.item,
+            mb.colour,
+            mb.bucket,
+            mb.size
+    ");
 
     while($row = mysqli_fetch_assoc($sql)){
 
-        $key = $row['item'].'||'.$row['colour'].'||'.$row['bucket'];
+        if(!in_array($row['size'], $sizeList)){
+            $sizeList[] = $row['size'];
+        }
 
-        $reportData[$key] = [
+        $key = $row['style'].'||'.$row['item'].'||'.$row['colour'].'||'.$row['bucket'];
 
-            'style'     => $row['style'],
-            'item'      => $row['item'],
-            'gender'    => $row['gender'],
-            'colour'    => $row['colour'],
-            'bucket'    => $row['bucket'],
+        if(!isset($reportData[$key])){
+            $reportData[$key] = [
+                'style'  => $row['style'],
+                'item'   => $row['item'],
+                'gender' => $row['gender'],
+                'colour' => $row['colour'],
+                'bucket' => $row['bucket'],
+                'total'  => 0
+            ];
+        }
 
-            'qty_order' => $row['qty_order'],
-            'qty_in'    => $row['qty_in'],
-            'qty_out'   => $row['qty_out'],
-            'balance'   => $row['balance']
-
-        ];
+        $reportData[$key][$row['size']] = $row['qty'];
+        $reportData[$key]['total'] += $row['qty'];
     }
 
 }
+
+/* =========================
+   SORT SIZE
+========================= */
+usort($sizeList, function($a,$b){
+    $na = intval(str_replace('T','',$a));
+    $nb = intval(str_replace('T','',$b));
+    return $na <=> $nb;
+});
+
+
 
 // =========================
 // MASTER BUCKET
@@ -198,6 +155,51 @@ $listColour = mysqli_query($conn,"
     WHERE colour IS NOT NULL
     AND colour <> ''
     ORDER BY colour
+");
+
+// =========================
+// MASTER STYLE
+// =========================
+$listStyle = mysqli_query($conn,"
+    SELECT DISTINCT style
+    FROM tbl_master_barcode
+    WHERE style IS NOT NULL
+    AND style <> ''
+    ORDER BY style
+");
+
+// =========================
+// MASTER GENDER
+// =========================
+$listGender = mysqli_query($conn,"
+    SELECT DISTINCT gender
+    FROM tbl_master_barcode
+    WHERE gender IS NOT NULL
+    AND gender <> ''
+    ORDER BY gender
+");
+
+// =========================
+// MASTER SIZE
+// =========================
+$listSize = mysqli_query($conn,"
+    SELECT DISTINCT size
+    FROM tbl_master_barcode
+    WHERE size IS NOT NULL
+    AND size <> ''
+    ORDER BY
+        CAST(REPLACE(size,'T','') AS UNSIGNED),
+        size
+");
+// =========================
+// MASTER TYPE SCAN
+// =========================
+$listTypeScan = mysqli_query($conn,"
+    SELECT DISTINCT type_scan
+    FROM tbl_transaction_scan
+    WHERE type_scan IS NOT NULL
+    AND type_scan <> ''
+    ORDER BY type_scan
 ");
 ?>
 <style>
@@ -258,7 +260,7 @@ $listColour = mysqli_query($conn,"
                 <div class="col-sm-6">
                 <h1>
                 <i class="fas fa-chart-bar"></i>
-                Report Stock SM IP
+                Report Input SM by Size
                 </h1>
             </div>
 
@@ -268,7 +270,7 @@ $listColour = mysqli_query($conn,"
                     <a href="index.php">Home</a>
                     </li>
                     <li class="breadcrumb-item active">
-                    Report Stock SM IP
+                    Report Input SM by Size
                     </li>
                 </ol>
             </div>
@@ -296,7 +298,7 @@ Filter Report
 <div class="row">
 
 <div class="col-md-3">
-<label>Bucket From</label> <label class="text-danger">*</label>
+<label>Bucket From</label>
 
 <select class="form-control select2bs4"
         name="bucket_from"
@@ -318,7 +320,7 @@ value="<?= $bucket['bucket']; ?>"
 </div>
 
 <div class="col-md-3">
-<label>Bucket To</label> <label class="text-danger">*</label>
+<label>Bucket To</label>
 
 <select class="form-control select2bs4"
         name="bucket_to"
@@ -401,6 +403,119 @@ value="<?= $colour['colour']; ?>"
 
 </div>
 
+<div class="col-md-3">
+<label>Style</label>
+
+<select class="form-control select2bs4"
+        name="style"
+        style="width:100%;">
+
+<option value="">Semua Style</option>
+
+<?php while($style = mysqli_fetch_assoc($listStyle)): ?>
+<option
+value="<?= $style['style']; ?>"
+<?= (isset($_GET['style']) && $_GET['style']==$style['style']) ? 'selected' : ''; ?>
+>
+<?= $style['style']; ?>
+</option>
+
+<?php endwhile; ?>
+
+
+</select>
+
+</div>
+
+<div class="col-md-3">
+<label>Gender</label>
+
+<select class="form-control select2bs4"
+        name="gender"
+        style="width:100%;">
+
+<option value="">Semua Gender</option>
+
+<?php while($gender = mysqli_fetch_assoc($listGender)): ?>
+<option
+value="<?= $gender['gender']; ?>"
+<?= (isset($_GET['gender']) && $_GET['gender']==$gender['gender']) ? 'selected' : ''; ?>
+>
+<?= $gender['gender']; ?>
+</option>
+
+<?php endwhile; ?>
+
+
+</select>
+
+</div>
+
+<div class="col-md-3">
+<label>Size</label>
+
+<select class="form-control select2bs4"
+        name="size"
+        style="width:100%;">
+
+<option value="">Semua Size</option>
+
+<?php while($size = mysqli_fetch_assoc($listSize)): ?>
+<option
+value="<?= $size['size']; ?>"
+<?= (isset($_GET['size']) && $_GET['size']==$size['size']) ? 'selected' : ''; ?>
+>
+<?= $size['size']; ?>
+</option>
+
+<?php endwhile; ?>
+
+
+</select>
+
+</div>
+
+<div class="col-md-3">
+<label>Type Scan  </label>
+
+<select class="form-control select2bs4"
+        name="type_scan"
+        style="width:100%;"
+        required>
+
+<option value="">Semua Type Scan</option>
+
+<?php while($typeScan = mysqli_fetch_assoc($listTypeScan)): ?>
+<option
+value="<?= $typeScan['type_scan']; ?>"
+<?= (isset($_GET['type_scan']) && $_GET['type_scan']==$typeScan['type_scan']) ? 'selected' : ''; ?>
+>
+<?php
+$val = trim($typeScan['type_scan'] ?? '');
+
+switch ($val) {
+    case 'IN_SM':
+        echo 'Scan In Supermarket';
+        break;
+    case 'OUT_SM':
+        echo 'Scan Out Supermarket';
+        break;
+    case 'OUT_PACKING':
+        echo 'Scan Out Packing';
+        break;
+    default:
+        echo $val;
+}
+?>
+</option>
+
+<?php endwhile; ?>
+
+
+</select>
+
+</div>
+
 </div>
 
 <br>
@@ -415,7 +530,7 @@ value="<?= $colour['colour']; ?>"
 <button type="button"
         class="btn btn-secondary"
         style="width:100px;"
-        onclick="window.location='report_stock_sm_ip.php'">
+        onclick="window.location.href = window.location.pathname;">
     <i class="fas fa-sync-alt"></i>
     Reset
 </button>
@@ -429,7 +544,7 @@ value="<?= $colour['colour']; ?>"
     <div class="card-header">
 
         <h3 class="card-title">
-            Detail Stock SM IP
+            Detail Input SM by Size
         </h3>
 
     </div>
@@ -450,10 +565,10 @@ value="<?= $colour['colour']; ?>"
                         <th>Gender</th>
                         <th>Colour</th>
                         <th>Bucket</th>
-                        <th>Qty Order</th>
-                        <th>Scan In</th>
-                        <th>Scan Out</th>
-                        <th>Balance</th>
+                        <?php foreach($sizeList as $size): ?>
+                            <th><?= $size ?></th>
+                        <?php endforeach; ?>
+                        <th>Total</th>
                     </tr>
                 </thead>
 
@@ -464,28 +579,20 @@ value="<?= $colour['colour']; ?>"
                         <td><?= $no++ ?></td>
                         <td><?= $row['style'] ?></td>
                         <td><?= $row['item'] ?></td>
-                        <td><?= $row['gender'] ?></td>
+                        <td><?= $row['gender'] ?></td>                                  
                         <td><?= $row['colour'] ?></td>
                         <td><?= $row['bucket'] ?></td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_order']) ?>
-                        </td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_in']) ?>
-                        </td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_out']) ?>
-                        </td>
-
+                        <?php foreach($sizeList as $size): ?>
+                            <td class="text-end">
+                                <?= isset($row[$size]) ? number_format($row[$size]) : 0 ?>
+                            </td>
+                        <?php endforeach; ?>
                         <td class="text-end font-weight-bold">
-                            <?= number_format($row['balance']) ?>
+                            <?= number_format($row['total']) ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                </tbody>
+                </tbody>    
             </table>
         </div>
     </div>
@@ -539,7 +646,7 @@ $(function(){
                 extend: 'excelHtml5',
                 text: 'Export Excel',
                 className: 'btn btn-success btn-sm',
-                title: 'Report Stock SM IP'
+                title: 'Report Input SM by Size'
             }
         ]
     });
