@@ -360,6 +360,15 @@ $scan_type = $_SESSION['scan_type'];
                 </p>
               </a>
             </li>
+            <li class="nav-item">
+              <a href="report_input_sm.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Input SM by Size
+                </p>
+              </a>
+            </li>
           </ul>
         </li>
 
