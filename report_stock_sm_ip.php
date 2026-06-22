@@ -543,7 +543,7 @@ $(function(){
 
     $('.select2bs4').select2({
         theme: 'bootstrap4',
-        placeholder: 'Pilih Data',
+        placeholder: 'Select Data',
         allowClear: true
     });
 
