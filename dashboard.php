@@ -105,6 +105,38 @@ while($row = mysqli_fetch_assoc($chartData))
 }
 ?>
 
+<style>
+  .stat-card{
+      border:none;
+      border-radius:16px;
+      transition:.3s;
+  }
+
+  .stat-card:hover{
+      transform:translateY(-5px);
+  }
+
+  .stat-icon{
+      width:60px;
+      height:60px;
+      border-radius:15px;
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+  }
+
+  .card{
+      border-radius:16px;
+  }
+
+  .card-header{
+      background:white;
+      border-bottom:1px solid #f1f1f1;
+  }
+</style>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -115,6 +147,8 @@ while($row = mysqli_fetch_assoc($chartData))
 
     <title>iPhylon | Dashboard MES</title>
 
+    <link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
+    
     <!-- Google Font -->
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700">
@@ -164,9 +198,105 @@ while($row = mysqli_fetch_assoc($chartData))
             </div>
         </section>
 
+        
+
         <!-- CONTENT -->
         <section class="content">
             <div class="container-fluid">
+
+                <!-- Stat Cards -->
+                <div class="row mt-4">
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Total Production
+                                        </p>
+                                        <h2>1,248</h2>
+                                        <span class="text-success">
+                                            ↑ 12.5%
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-primary">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Total Stock SM IP
+                                        </p>
+                                        <h2>86</h2>
+                                        <span class="text-success">
+                                            ↑ 4.3%
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-success">
+                                        <i class="fas fa-store"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Total Orders
+                                        </p>
+                                        <h2>532</h2>
+                                        <span class="text-danger">
+                                            ↓ 3.1%
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-warning">
+                                        <i class="fas fa-clipboard-list"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Progress Production
+                                        </p>
+                                        <h2>78</h2>
+                                        <span class="text-warning">
+                                            Progress
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-danger">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
                 <!-- CHART + LIVE -->
                 <div class="row">
 
