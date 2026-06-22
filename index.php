@@ -6,6 +6,21 @@ if (!isset($_SESSION['login'])) {
     exit;
 }
 ?>
+
+<style>
+  .welcome-card{
+    background: linear-gradient(135deg,#00b14f,#38d66b);
+    color:white;
+    border-radius:20px;
+  }
+
+  .dashboard-icon{
+      font-size:90px;
+      opacity:.25;
+  }
+
+</style>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +28,8 @@ if (!isset($_SESSION['login'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>iPhylon | Home</title>
 
+  <link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
+  
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
@@ -44,51 +61,63 @@ if (!isset($_SESSION['login'])) {
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <div class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1 class="m-0">Dashboard Data</h1>
-          </div><!-- /.col -->
-          <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-              <li class="breadcrumb-item"><a href="#">Home</a></li>
-              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div><!-- /.col -->
-        </div><!-- /.row -->
-      </div><!-- /.container-fluid -->
-    </div>
-    <!-- /.content-header -->
 
-    <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-        <!-- Small boxes (Stat box) -->
-        <div class="row"> 
-          <!-- ./col -->
-          <div class="col-12">
-            <!-- small box -->
-            <div class="small-box bg-success">
-              <div class="inner">
-                <p>Hello, <?= $_SESSION['username']; ?></p>
-                <h3>WELCOME TO IP DASHBOARD <sup style="font-size: 20px"></sup></h3>
-                
-              </div>
-              <div class="icon">
-                <i class="ion ion-stats-bars"></i>
-              </div>
-              <a href="#" class="small-box-footer"> <i class="fas fa-arrow-circle-right"></i></a>
+    <!-- Header -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col-sm-6">
+                    <h1 class="m-0 font-weight-bold"><img src="assets/images/i.Phylon-1.png" alt="" width="100"></h1>
+                    <small class="text-muted">
+                        Overview of your system and key metrics
+                    </small>
+                </div>
+
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <a href="#">Home</a>
+                        </li>
+                        <!-- <li class="breadcrumb-item active">
+                            HOME
+                        </li> -->
+                    </ol>
+                </div>
             </div>
-          </div>
-          <!-- ./col -->
         </div>
-        <!-- /.row -->
-      </div><!-- /.container-fluid -->
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+
+            <!-- Welcome Banner -->
+            <div class="card welcome-card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5>Hello, <?= $_SESSION['username']; ?> 👋</h5>
+
+                            <h1 class="font-weight-bold mb-3">
+                                Welcome to IP Dashboard
+                            </h1>
+
+                            <p class="mb-0">
+                                Here's what's happening with your production system today.
+                            </p>
+                        </div>
+
+                        <div class="col-md-4 text-right">
+                            <i class="fas fa-chart-line dashboard-icon"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </section>
-    <!-- /.content -->
-  </div>
+
+</div>
   <!-- /.content-wrapper -->
   <footer class="main-footer">
     <strong>Copyright &copy; 2024 <a href="#">MFG Project Officer</a>.</strong>
