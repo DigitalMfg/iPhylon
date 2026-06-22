@@ -203,7 +203,7 @@ $listColour = mysqli_query($conn,"
 
 <title>iPhylon | Report Minus Packing</title>
 
-<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+<link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
 
 <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 <link rel="stylesheet" href="dist/css/adminlte.min.css">
