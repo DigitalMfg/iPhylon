@@ -298,14 +298,14 @@ Filter Report
 <div class="row">
 
 <div class="col-md-3">
-<label>Bucket From</label>
+<label>Bucket From</label> <label class="text-danger">*</label>
 
 <select class="form-control select2bs4"
         name="bucket_from"
         style="width:100%;"
         required>
 
-<option value="">Pilih Bucket</option>
+<option value="">Select Bucket</option>
 <?php while($bucket = mysqli_fetch_assoc($listBucket)): ?>
 <option
 value="<?= $bucket['bucket']; ?>"
@@ -320,7 +320,7 @@ value="<?= $bucket['bucket']; ?>"
 </div>
 
 <div class="col-md-3">
-<label>Bucket To</label>
+<label>Bucket To</label> <label class="text-danger">*</label>
 
 <select class="form-control select2bs4"
         name="bucket_to"
@@ -476,7 +476,7 @@ value="<?= $size['size']; ?>"
 </div>
 
 <div class="col-md-3">
-<label>Type Scan  </label>
+<label>Type Scan  </label> <label class="text-danger">*</label>
 
 <select class="form-control select2bs4"
         name="type_scan"
@@ -625,7 +625,7 @@ $(function(){
 
     $('.select2bs4').select2({
         theme: 'bootstrap4',
-        placeholder: 'Pilih Data',
+        placeholder: 'Select Data',
         allowClear: true
     });
 
