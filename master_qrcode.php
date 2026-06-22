@@ -17,6 +17,8 @@ if (!isset($_SESSION['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>iPhylon | Master QR Code</title>
+    
+    <link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
 
     <!-- Google Font -->
     <link rel="stylesheet"

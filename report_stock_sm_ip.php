@@ -232,7 +232,7 @@ $listColour = mysqli_query($conn,"
 
 <title>iPhylon | Report Stock SM IP</title>
 
-<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+<link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
 
 <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 <link rel="stylesheet" href="dist/css/adminlte.min.css">
@@ -439,7 +439,7 @@ value="<?= $colour['colour']; ?>"
 
         <div class="table-responsive">
 
-            <table id="reportMinus"
+            <table id="ReportStock"
                    class="table table-bordered table-striped">
 
                 <thead>
@@ -453,13 +453,26 @@ value="<?= $colour['colour']; ?>"
                         <th>Qty Order</th>
                         <th>Scan In</th>
                         <th>Scan Out</th>
-                        <th>Balance</th>
+                        <th>Stock</th>
                     </tr>
                 </thead>
 
                 <tbody>
+                    <?php
+                    $total_order   = 0;
+                    $total_in      = 0;
+                    $total_out     = 0;
+                    $total_balance = 0;
+                    ?>
                     <?php $no=1; ?>
-                    <?php foreach($reportData as $row): ?>
+                    <?php foreach($reportData as $row): 
+
+                        $total_order   += $row['qty_order'];
+                        $total_in      += $row['qty_in'];
+                        $total_out     += $row['qty_out'];
+                        $total_balance += $row['balance'];
+
+                    ?>
                     <tr>
                         <td><?= $no++ ?></td>
                         <td><?= $row['style'] ?></td>
@@ -467,25 +480,37 @@ value="<?= $colour['colour']; ?>"
                         <td><?= $row['gender'] ?></td>
                         <td><?= $row['colour'] ?></td>
                         <td><?= $row['bucket'] ?></td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_order']) ?>
-                        </td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_in']) ?>
-                        </td>
-
-                        <td class="text-end">
-                            <?= number_format($row['qty_out']) ?>
-                        </td>
-
-                        <td class="text-end font-weight-bold">
-                            <?= number_format($row['balance']) ?>
-                        </td>
+                        <td><?= number_format($row['qty_order']) ?></td>
+                        <td><?= number_format($row['qty_in']) ?></td>
+                        <td><?= number_format($row['qty_out']) ?></td>
+                        <td><?= number_format($row['balance']) ?></td>
                     </tr>
                     <?php endforeach; ?>
+                    
                 </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold bg-light">
+                        <td colspan="6" class="text-center">
+                            TOTAL
+                        </td>
+
+                        <td class="text-end">
+                            <?= number_format($total_order) ?>
+                        </td>
+
+                        <td class="text-end">
+                            <?= number_format($total_in) ?>
+                        </td>
+
+                        <td class="text-end">
+                            <?= number_format($total_out) ?>
+                        </td>
+
+                        <td class="text-end">
+                            <?= number_format($total_balance) ?>
+                        </td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -522,7 +547,7 @@ $(function(){
         allowClear: true
     });
 
-    $('#reportMinus').DataTable({
+    $('#ReportStock').DataTable({
         responsive: true,
         paging: true,
         searching: true,
