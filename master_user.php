@@ -340,6 +340,9 @@ Register New User
           <option value="Supermarket">
             Supermarket
           </option>
+           <option value="Planning">
+            Planning
+          </option>
           
         </select>
       </div>
@@ -619,6 +622,11 @@ class="table table-bordered table-striped">
                                 value="Supermarket"
                                 <?= ($MU['cost_center'] == 'Supermarket') ? 'selected' : ''; ?>>
                                 Supermarket
+                            </option>
+                            <option
+                                value="Planning"
+                                <?= ($MU['cost_center'] == 'Planning') ? 'selected' : ''; ?>>
+                                Planning    
                             </option>
                         </select>
                     </div>

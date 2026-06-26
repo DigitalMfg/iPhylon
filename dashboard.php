@@ -198,14 +198,12 @@ while($row = mysqli_fetch_assoc($chartData))
             </div>
         </section>
 
-        
-
         <!-- CONTENT -->
         <section class="content">
             <div class="container-fluid">
 
                 <!-- Stat Cards -->
-                <div class="row mt-4">
+                <div class="row mt-12">
 
                     <div class="col-lg-3 col-md-6">
                         <div class="card stat-card shadow-sm">
