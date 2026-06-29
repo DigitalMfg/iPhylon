@@ -31,6 +31,94 @@ if(mysqli_num_rows($getShift) > 0)
 
 /*
 |--------------------------------------------------------------------------
+| DASHBOARD SUMMARY
+|--------------------------------------------------------------------------
+*/
+
+// Total Order
+$sqlOrder = mysqli_query($conn,"
+SELECT COALESCE(SUM(total_order),0) total
+FROM tbl_spk_detail
+");
+$totalOrder = mysqli_fetch_assoc($sqlOrder)['total'];
+
+// =========================
+// TOTAL PLANNING
+// =========================
+$sqlPlanning = mysqli_query($conn,"
+SELECT COALESCE(SUM(total_qty),0) AS total
+FROM tbl_spk_detail
+");
+
+$totalPlanning = mysqli_fetch_assoc($sqlPlanning)['total'];
+
+
+// Total Production (OUT_PACKING)
+$sqlProduction = mysqli_query($conn,"
+    SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0) AS total
+    FROM tbl_transaction_scan ts
+    INNER JOIN tbl_master_barcode mb
+        ON ts.qr_code = mb.qr_code
+    WHERE ts.type_scan = 'OUT_PACKING'
+");
+$totalProduction = mysqli_fetch_assoc($sqlProduction)['total'];
+
+
+// Total Stock Supermarket
+$sqlStockSM = mysqli_query($conn,"
+    SELECT
+    (
+        SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
+        FROM tbl_transaction_scan ts
+        INNER JOIN tbl_master_barcode mb
+            ON ts.qr_code = mb.qr_code
+        WHERE ts.type_scan='IN_SM'
+    )
+    -
+    (
+        SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
+        FROM tbl_transaction_scan ts
+        INNER JOIN tbl_master_barcode mb
+            ON ts.qr_code = mb.qr_code
+        WHERE ts.type_scan='OUT_SM'
+    ) AS total
+");
+$totalStockSM = mysqli_fetch_assoc($sqlStockSM)['total'];
+
+
+// Progress Production
+$remainingPlanning = $totalPlanning - $totalProduction;
+
+// Progress %
+$planningPercent = 0;
+$orderPercent = 0;
+$planningOrderPercent = 0;
+$stockSupermarketPercent = 0;
+$remainingPercent = 0;
+
+if($totalPlanning > 0){
+    $planningPercent = ($totalProduction / $totalPlanning) * 100;
+}
+
+if($totalOrder > 0){
+    $orderPercent = ($totalProduction / $totalOrder) * 100;
+
+    // Planning dibanding Order
+    $planningOrderPercent = ($totalPlanning / $totalOrder) * 100;
+}
+
+if($totalPlanning > 0){
+    $planningPercent = ($totalProduction/$totalPlanning)*100;
+}
+if($totalStockSM  > 0){
+    $stockSupermarketPercent = ($totalStockSM / $totalPlanning) * 100;
+}
+
+if($remainingPlanning > 0){
+    $remainingPercent = ($remainingPlanning / $totalPlanning) * 100;
+}
+/*
+|--------------------------------------------------------------------------
 | PLAN VS PACKING
 |--------------------------------------------------------------------------
 */
@@ -71,7 +159,6 @@ LEFT JOIN
     SELECT
         t.cost_center,
         SUM(m.qty) AS total_packing
-
     FROM tbl_transaction_scan t
 
     INNER JOIN tbl_master_barcode m
@@ -204,52 +291,7 @@ while($row = mysqli_fetch_assoc($chartData))
 
                 <!-- Stat Cards -->
                 <div class="row mt-12">
-
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card stat-card shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <p class="text-muted mb-1">
-                                            Total Production
-                                        </p>
-                                        <h2>1,248</h2>
-                                        <span class="text-success">
-                                            ↑ 12.5%
-                                        </span>
-                                    </div>
-
-                                    <div class="stat-icon bg-primary">
-                                        <i class="fas fa-box"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
-                        <div class="card stat-card shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <p class="text-muted mb-1">
-                                            Total Stock SM IP
-                                        </p>
-                                        <h2>86</h2>
-                                        <span class="text-success">
-                                            ↑ 4.3%
-                                        </span>
-                                    </div>
-
-                                    <div class="stat-icon bg-success">
-                                        <i class="fas fa-store"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg">
                         <div class="card stat-card shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -257,9 +299,31 @@ while($row = mysqli_fetch_assoc($chartData))
                                         <p class="text-muted mb-1">
                                             Total Orders
                                         </p>
-                                        <h2>532</h2>
-                                        <span class="text-danger">
-                                            ↓ 3.1%
+                                        <h2><?= number_format($totalOrder); ?></h2>
+                                        <span class="text-info">
+                                            Of Lot Basis
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-info">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Total Planning
+                                        </p>
+                                        <h2><?= number_format($totalPlanning) ?></h2>
+                                        <span class="text-warning">
+                                            <?= number_format($planningOrderPercent,1); ?> % of Order
                                         </span>
                                     </div>
 
@@ -271,17 +335,61 @@ while($row = mysqli_fetch_assoc($chartData))
                         </div>
                     </div>
 
-                    <div class="col-lg-3 col-md-6">
+                    <div class="col-lg col-md-6">
                         <div class="card stat-card shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <p class="text-muted mb-1">
-                                            Progress Production
+                                            Total Production
                                         </p>
-                                        <h2>78</h2>
-                                        <span class="text-warning">
-                                            Progress
+                                        <h2><?= number_format($totalProduction) ?></h2>
+                                        <span class="text-primary">
+                                            <?= number_format($planningPercent,1) ?> % of Total Planning
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-primary">
+                                        <i class="fas fa-box"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Total Stock SM IP
+                                        </p>
+                                        <h2><?= number_format($totalStockSM); ?></h2>
+                                        <span class="text-success">
+                                            <?= number_format($stockSupermarketPercent,1); ?>% of Total Planning
+                                        </span>
+                                    </div>
+
+                                    <div class="stat-icon bg-success">
+                                        <i class="fas fa-store"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg col-md-6">
+                        <div class="card stat-card shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="text-muted mb-1">
+                                            Remaining
+                                        </p>
+                                        <h2><?= number_format($remainingPlanning) ?></h2>
+                                        <span class="text-danger">
+                                            <?= number_format($remainingPercent,1); ?>% of Remaining
                                         </span>
                                     </div>
 
