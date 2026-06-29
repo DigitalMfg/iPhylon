@@ -367,7 +367,7 @@ while($row = mysqli_fetch_assoc($chartData))
                                         </p>
                                         <h2><?= number_format($totalStockSM); ?></h2>
                                         <span class="text-success">
-                                            <?= number_format($stockSupermarketPercent,1); ?>% of Total Planning
+                                            IN SM - OUT SM
                                         </span>
                                     </div>
 
