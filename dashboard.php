@@ -385,7 +385,7 @@ while($row = mysqli_fetch_assoc($chartData))
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <p class="text-muted mb-1">
-                                            Remaining
+                                            Remaining Production
                                         </p>
                                         <h2><?= number_format($remainingPlanning) ?></h2>
                                         <span class="text-danger">
