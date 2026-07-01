@@ -345,7 +345,7 @@ while($row = mysqli_fetch_assoc($chartData))
                                         </p>
                                         <h2><?= number_format($totalProduction) ?></h2>
                                         <span class="text-primary">
-                                            <?= number_format($planningPercent,1) ?> % of Total Planning
+                                            <?= number_format($planningPercent,1) ?> % of Total Plan
                                         </span>
                                     </div>
 
@@ -363,7 +363,7 @@ while($row = mysqli_fetch_assoc($chartData))
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <p class="text-muted mb-1">
-                                            Total Stock SM IP
+                                        Stock SM IP
                                         </p>
                                         <h2><?= number_format($totalStockSM); ?></h2>
                                         <span class="text-success">
@@ -385,7 +385,7 @@ while($row = mysqli_fetch_assoc($chartData))
                                 <div class="d-flex justify-content-between">
                                     <div>
                                         <p class="text-muted mb-1">
-                                            Remaining Production
+                                            Remaining
                                         </p>
                                         <h2><?= number_format($remainingPlanning) ?></h2>
                                         <span class="text-danger">
