@@ -290,7 +290,7 @@ ORDER BY po_item
 
     <div class="card-header">
         <h3 class="card-title">
-        Detail QR Code Viewer
+        Filter Report
         </h3>
     </div>
 
