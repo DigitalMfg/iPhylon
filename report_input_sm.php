@@ -234,7 +234,7 @@ $listTypeScan = mysqli_query($conn,"
 
 <title>iPhylon | Report Stock SM IP</title>
 
-<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+<link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
 
 <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
 <link rel="stylesheet" href="dist/css/adminlte.min.css">
@@ -603,9 +603,13 @@ switch ($val) {
 
 </div>
 
-<footer class="main-footer">
-<strong>Mfg Project Officer</strong>
-</footer>
+<!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="float-right d-none d-sm-block">
+      <b>Version</b> 1.0.0
+    </div>2024 
+    <strong><a href="#">Mfg Project Officer</a>.</strong> All rights reserved.
+  </footer>
 
 <script src="plugins/jquery/jquery.min.js"></script>
 <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
