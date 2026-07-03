@@ -75,14 +75,41 @@ $scan_type = $_SESSION['scan_type'];
       data-accordion="false">
 
         <!-- DASHBOARD -->
+         <li class="nav-header">
+          HOME
+        </li>
         <li class="nav-item">
-          <a href="dashboard.php"
+          <a href="#"
           class="nav-link">
             <i class="nav-icon fas fa-home"></i>
             <p>
               Dashboard
+              <i class="fas fa-angle-left right"></i>
             </p>
           </a>
+
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="dashboard.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Production
+                </p>
+              </a>
+            </li>
+          </ul>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="dashboard_sm.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Supermarket
+                </p>
+              </a>
+            </li>
+          </ul>
         </li>
 
         <!-- ===================================== -->
