@@ -515,9 +515,7 @@ setInterval(function(){
 function loadDetail(line,type)
 {
     $('#detailChartModal').modal('show');
-
     $('#detailChartBody').html('Loading...');
-
     $.ajax({
 
         url : 'ajax_dashboard_detail.php',
@@ -538,21 +536,20 @@ function loadDetail(line,type)
     });
 }
 
-function loadOutputPerHour(line,shift)
+function loadOutputPerHour(line,shift,item,colour)
 {
     $('#hourlyModal').modal('show');
-
     $('#hourlyBody').html('Loading...');
-
     $.ajax({
 
         url : 'ajax_output_per_hour.php',
 
         type : 'POST',
-
         data : {
-            line : line,
-            shift : shift
+        line   : line,
+        shift  : shift,
+        item   : item,
+        colour : colour
         },
 
         success:function(result)
@@ -563,10 +560,16 @@ function loadOutputPerHour(line,shift)
     });
 }
 
+$('#hourlyModal').on('hidden.bs.modal', function () {
+
+    $('body').addClass('modal-open');
+
+});
+
 </script>
 
     <div class="modal fade" id="detailChartModal">
-        <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-info">
                     <h4 class="modal-title">
@@ -582,15 +585,13 @@ function loadOutputPerHour(line,shift)
 
                 <div class="modal-body" id="detailChartBody">
                     Loading...
-                
-
                 </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="hourlyModal">
-        <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header bg-success">
                     <h4 class="modal-title">

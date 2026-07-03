@@ -9,12 +9,9 @@ $qHeader = mysqli_query($conn,"
     FROM tbl_daily_plan_header
     WHERE line_produksi='$line'
     AND tanggal_plan = CURDATE()
-    LIMIT 1
 ");
 
-$dp = mysqli_fetch_assoc($qHeader);
-
-if(!$dp){
+if(mysqli_num_rows($qHeader)==0){
     die("
         <div class='alert alert-danger'>
             Daily Plan tidak ditemukan
@@ -31,35 +28,6 @@ $sizes = [
 ];
 ?>
 
-<div class="row mb-3">
-    <div class="col-md-4">
-        <strong>Item :</strong>
-        <?= $dp['item']; ?>
-    </div>
-
-    <div class="col-md-2">
-        <strong>Colour :</strong>
-        <?= $dp['colour']; ?>
-    </div>
-
-    <div class="col-md-2">
-        <strong>Mesin :</strong>
-        <?= $dp['mesin']; ?>
-    </div>
-
-    <div class="col-md-2">
-        <strong>Injector :</strong>
-        <?= $dp['injector']; ?>
-    </div>
-
-    <div class="col-md-2">
-        <strong>Line :</strong>
-        <?= $dp['line_produksi']; ?>
-    </div>
-</div>
-
-
-
 <?php
 $typeList = [
     'MOLD',
@@ -68,9 +36,42 @@ $typeList = [
     'PACKING'
 ];
 ?>
+    <?php while($dp = mysqli_fetch_assoc($qHeader)): ?>
+    <div class="card card-outline card-info mb-2">
+        <div class="card-body py-2">
+            <div class="row">
+                <div class="col-md-4">
+                    <strong>Item :</strong>
+                    <?= $dp['item']; ?>
+                </div>
+
+                <div class="col-md-2">
+                    <strong>Colour :</strong>
+                    <?= $dp['colour']; ?>
+                </div>
+
+                <div class="col-md-2">
+                    <strong>Mesin :</strong>
+                    <?= $dp['mesin']; ?>
+                </div>
+
+                <div class="col-md-2">
+                    <strong>Injector :</strong>
+                    <?= $dp['injector']; ?>
+                </div>
+
+                <div class="col-md-2">
+                    <strong>Line :</strong>
+                    <?= $dp['line_produksi']; ?>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 <div class="card card-primary">
-
     <div class="card-header">
         <h3 class="card-title">
             SHIFT <?= $shift; ?>
@@ -78,56 +79,42 @@ $typeList = [
     </div>
 
     <div class="card-body p-0">
-
         <div class="table-responsive">
-
             <table class="table table-bordered text-center">
-
                 <thead>
-
                     <tr>
-
                         <th>SIZE</th>
-
                         <?php foreach($sizes as $size): ?>
                             <th><?= $size; ?></th>
                         <?php endforeach; ?>
-
                         <th>TOTAL</th>
-
                     </tr>
-
                 </thead>
 
                 <tbody>
-
                 <?php foreach($typeList as $type): ?>
-
                     <tr>
-
                         <th><?= $type; ?></th>
-
                         <?php
                         $total = 0;
-
                         foreach($sizes as $size):
-
                             if($type == 'PACKING')
                             {
                                 $qPack = mysqli_query($conn,"
-                                    SELECT IFNULL(SUM(m.qty),0) total
-                                    FROM tbl_transaction_scan t
+                                SELECT COALESCE(SUM(m.qty),0) total
+                                FROM tbl_transaction_scan t
 
-                                    INNER JOIN tbl_master_barcode m
-                                        ON m.qr_code = t.qr_code
+                                INNER JOIN tbl_master_barcode m
+                                    ON m.qr_code = t.qr_code
 
-                                    WHERE t.type_scan = 'OUT_PACKING'
-                                    AND t.shift = '$shift'
-                                    AND DATE(t.date_scan) = CURDATE()
+                                WHERE t.type_scan='OUT_PACKING'
+                                AND t.shift='$shift'
+                                AND DATE(t.date_scan)=CURDATE()
 
-                                    AND t.cost_center = 'Line ".$dp['line_produksi']."'
-
-                                    AND m.size = '$size'
+                                AND m.line='".$dp['line_produksi']."'
+                                AND m.item='".$dp['item']."'
+                                AND m.colour='".$dp['colour']."'
+                                AND m.size='$size'
                                 ");
 
                                 $rPack = mysqli_fetch_assoc($qPack);
@@ -137,18 +124,16 @@ $typeList = [
                             else
                             {
                                 $q = mysqli_query($conn,"
-                                    SELECT qty
+                                    SELECT
+                                        COALESCE(SUM(qty),0) total
                                     FROM tbl_daily_plan_detail
                                     WHERE id_daily_header='".$dp['id_daily_header']."'
                                     AND shift='$shift'
                                     AND type='$type'
                                     AND size='$size'
-                                    LIMIT 1
                                 ");
-
                                 $r = mysqli_fetch_assoc($q);
-
-                                $qty = $r['qty'] ?? 0;
+                                $qty = $r['total'];
                             }
 
                             $total += $qty;
@@ -169,18 +154,18 @@ $typeList = [
         </div>
     </div>
 </div>
-<div class="text-left mb-3">
+    <div class="text-left mb-3">
 
-    <button
-        class="btn btn-success"
-        onclick="loadOutputPerHour(
-            <?= $dp['line_produksi']; ?>,
-            <?= $shift; ?>
-        )">
-
-        <i class="fas fa-clock"></i>
-        Output Per Hour
-
-    </button>
-
-</div>
+        <button
+                class="btn btn-success"
+                onclick="loadOutputPerHour(
+                    '<?= $dp['line_produksi']; ?>',
+                    '<?= $shift; ?>',
+                    '<?= addslashes($dp['item']); ?>',
+                    '<?= addslashes($dp['colour']); ?>'
+                )">
+            <i class="fas fa-clock"></i>
+            Output Per Hour
+        </button>
+    </div>
+    <?php endwhile; ?>

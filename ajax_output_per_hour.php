@@ -1,12 +1,16 @@
 <?php
 require 'function.php';
 
-$line  = $_POST['line'];
-$shift = $_POST['shift'];
+$line   = $_POST['line'];
+$shift  = $_POST['shift'];
+$item   = $_POST['item'];
+$colour = $_POST['colour'];
 $qHeader = mysqli_query($conn,"
     SELECT *
     FROM tbl_daily_plan_header
     WHERE line_produksi='$line'
+    AND item='$item'
+    AND colour='$colour'
     AND tanggal_plan = CURDATE()
     LIMIT 1
 ");
@@ -36,8 +40,10 @@ INNER JOIN tbl_master_barcode m
 
 WHERE t.type_scan = 'OUT_PACKING'
 AND t.shift = '$shift'
-AND t.cost_center = 'Line $line'
 AND DATE(t.date_scan) = CURDATE()
+AND m.line='$line'
+AND m.item='$item'
+AND m.colour='$colour'
 
 GROUP BY
     t.hour_scan,
@@ -81,37 +87,26 @@ $grandTotalAll = 0;
 </div>
 
 <div class="table-responsive">
-
 <table class="table table-bordered table-striped text-center">
-
     <thead class="bg-success">
-
         <tr>
 
             <th>Hour</th>
-
             <?php foreach($sizes as $size): ?>
                 <th><?= $size ?></th>
             <?php endforeach; ?>
-
             <th>Total</th>
-
         </tr>
-
     </thead>
 
     <tbody>
 
         <?php for($hour=1; $hour<=8; $hour++): ?>
-
         <tr>
-
             <th>
                 <?= $hour ?>
             </th>
-
             <?php
-
             $grandTotal = 0;
             $grandTotalAllHour = 0;
 
@@ -121,9 +116,7 @@ $grandTotalAll = 0;
 
                 $grandTotal += $qty;
                 $grandTotalAll += $qty;
-
             ?>
-
                 <td>
                     <?= $qty ?>
                 </td>
@@ -133,7 +126,6 @@ $grandTotalAll = 0;
             <td class="font-weight-bold bg-light">
                 <?= number_format($grandTotal) ?>
             </td>
-
         </tr>
 
         <?php endfor; ?>
@@ -158,7 +150,6 @@ $grandTotalAll = 0;
             <td>
                 <?= number_format($grandTotalAll); ?>
             </td>
-
         </tr>
     </tbody>
 
