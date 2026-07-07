@@ -79,16 +79,21 @@ ORDER BY CAST(line AS UNSIGNED)
 
     function getLastWIP($conn, $line, $shift)
 {
-    if($shift == 1)
-    {
+    if($shift == 1){
+
         $lastShift = 3;
-        $tanggal = date('Y-m-d', strtotime('-1 day'));
-    }
-    else
-    {
-        $lastShift = $shift - 1;
-        $tanggal = date('Y-m-d');
-    }
+        $tanggal = date('Y-m-d',strtotime('-1 day'));
+        }
+        elseif($shift == 2){
+
+            $lastShift = 1;
+            $tanggal = date('Y-m-d');
+        }
+        else{
+            // Shift 3 mengambil Last WIP dari Shift 2 HARI SEBELUMNYA
+            $lastShift = 2;
+            $tanggal = date('Y-m-d',strtotime('-1 day'));
+        }
 
         $sql = mysqli_query($conn,"
         SELECT
@@ -207,11 +212,23 @@ ORDER BY CAST(line AS UNSIGNED)
     $today = date('Y-m-d');
 
     if($shiftNow == 1){
-        $lastShift = 3;
+
+    $lastShift = 3;
+    $lastDate = date('Y-m-d',strtotime('-1 day'));
+
+    }
+    elseif($shiftNow == 2){
+
+        $lastShift = 1;
+        $lastDate = date('Y-m-d');
+
+    }
+    else{
+
+        // Shift 3 harus menutup Shift 2 kemarin
+        $lastShift = 2;
         $lastDate = date('Y-m-d',strtotime('-1 day'));
-    }else{
-        $lastShift = $shiftNow-1;
-        $lastDate = $today;
+
 }
 
 ?>
@@ -517,9 +534,13 @@ ORDER BY CAST(line AS UNSIGNED)
                                     // ==========================
                                     $productionWIP = $productionLast + $productionScanOut - $smScanIn;
                                     $smWIP = $smLast + $smScanIn - $smScanOut;
+                                    $saveDate = ($shiftNow == 3)
+                                        ? date('Y-m-d')
+                                        : date('Y-m-d');
+
                                     saveShiftWIP(
                                         $conn,
-                                        date('Y-m-d'),
+                                        $saveDate,
                                         $shiftNow,
                                         $lineNo,
                                         $productionLast,
