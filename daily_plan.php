@@ -352,26 +352,31 @@ $DailyPlan = mysqli_query($conn,"
                               foreach($sizes as $size):
 
                               if($type == 'PACKING')
-                              {
-                                  $qPacking = mysqli_query($conn,"
-                                      SELECT
-                                          SUM(m.qty) total_qty
-                                      FROM tbl_transaction_scan t
+                                    {
+                                        $qPacking = mysqli_query($conn,"
+                                            SELECT
+                                                COALESCE(SUM(m.qty),0) AS total_qty
+                                            FROM tbl_transaction_scan t
 
-                                      INNER JOIN tbl_master_barcode m
-                                          ON m.qr_code = t.qr_code
+                                            INNER JOIN tbl_master_barcode m
+                                                ON m.qr_code = t.qr_code
 
-                                      WHERE t.type_scan = 'OUT_PACKING'
-                                      AND t.shift = '$shift'
-                                      AND t.cost_center = 'Line ".$dp['line_produksi']."'
-                                      AND DATE(t.date_scan) = '".$dp['tanggal_plan']."'
-                                      AND m.size = '$size'
-                                  ");
+                                            WHERE
+                                                t.type_scan = 'OUT_PACKING'
+                                                AND t.shift = '$shift'
+                                                AND DATE(t.date_scan) = '".$dp['tanggal_plan']."'
 
-                                  $rPacking = mysqli_fetch_assoc($qPacking);
+                                                AND m.no_jo = '".$dp['no_jo']."'
+                                                AND m.item = '".$dp['item']."'
+                                                AND m.colour = '".$dp['colour']."'
+                                                AND m.line = '".$dp['line_produksi']."'
+                                                AND m.size = '$size'
+                                        ");
 
-                                  $qty = $rPacking['total_qty'] ?? 0;
-                              }
+                                        $rPacking = mysqli_fetch_assoc($qPacking);
+
+                                        $qty = $rPacking['total_qty'];
+                                    }
                               else
                               {
                                   $q = mysqli_query($conn,"
