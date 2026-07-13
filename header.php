@@ -392,7 +392,7 @@ $scan_type = $_SESSION['scan_type'];
               class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
                 <p>
-                  Input SM by Size
+                  Output by Size
                 </p>
               </a>
             </li>
