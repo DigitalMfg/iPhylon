@@ -189,6 +189,26 @@ while ($r = mysqli_fetch_assoc($qScan)) {
         float: right !important;
         margin-top: 10px;
     }
+    .report-table{
+    width:100%;
+    }
+
+    #ReportStock{
+        width:100% !important;
+        white-space: nowrap;
+    }
+    .content-wrapper{
+    overflow-x: hidden;
+    min-height: 100vh !important;
+    }
+
+    .dataTables_wrapper{
+        overflow: visible !important;
+    }
+
+    .card-body{
+        overflow: visible !important;
+    }
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -209,10 +229,11 @@ while ($r = mysqli_fetch_assoc($qScan)) {
     <link rel="stylesheet" href="plugins/select2/css/select2.min.css">
     <link rel="stylesheet" href="plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.4.1/css/fixedHeader.dataTables.min.css">
 
 </head>
 
-<body class="hold-transition sidebar-mini">
+<body class="hold-transition sidebar-mini layout-fixed">
 
     <div class="wrapper">
 
@@ -376,7 +397,7 @@ while ($r = mysqli_fetch_assoc($qScan)) {
                         <div class="card-body">
 
 
-                            <div class="table-responsive report-table">
+                            <div class="report-table">
 
                                 <table id="ReportStock"
                                     class="table table-bordered table-striped">
@@ -496,19 +517,31 @@ while ($r = mysqli_fetch_assoc($qScan)) {
         <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
         <script src="dist/js/adminlte.min.js"></script>
         <script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+        <script src="https://cdn.datatables.net/fixedheader/3.4.1/js/dataTables.fixedHeader.min.js"></script>
 
         <script>
             $(function() {
 
                 $('#ReportStock').DataTable({
+
                     responsive: false,
+                    scrollX: true,
+                    scrollCollapse: true,
+                    fixedHeader: true,
+
+                    fixedColumns: {
+                        leftColumns: 2
+                    },
+
                     autoWidth: false,
                     paging: true,
                     searching: true,
                     ordering: false,
-                    lengthMenu: [10, 25, 50, 100, 250, 500],
 
-                    dom: "<'row mb-2'<'col-sm-6 d-flex align-items-center'l><'col-sm-6 d-flex justify-content-end gap-2'Bf>>" +
+                    lengthMenu: [10,25,50,100,250,500],
+
+                    dom:
+                        "<'row mb-2'<'col-sm-6 d-flex align-items-center'l><'col-sm-6 d-flex justify-content-end gap-2'Bf>>" +
                         "<'row'<'col-sm-12'tr>>" +
                         "<'row mt-2'<'col-sm-5'i><'col-sm-7'p>>",
 
