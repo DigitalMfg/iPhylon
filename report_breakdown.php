@@ -359,13 +359,13 @@ while ($r = mysqli_fetch_assoc($qScan)) {
 
                                 <a
                                     href="?<?= http_build_query(array_merge($_GET, ['search' => 1, 'type_scan' => 'IN_SM'])) ?>"
-                                    class="btn <?= $type_scan == 'IN_SM' ? 'btn-primary' : 'btn-outline-success' ?>">
+                                    class="btn <?= $type_scan == 'IN_SM' ? 'btn-success' : 'btn-outline-success' ?>">
                                     In Supermarket
                                 </a>
 
                                 <a
                                     href="?<?= http_build_query(array_merge($_GET, ['search' => 1, 'type_scan' => 'OUT_SM'])) ?>"
-                                    class="btn <?= $type_scan == 'OUT_SM' ? 'btn-warning' : 'btn-outline-success' ?>">
+                                    class="btn <?= $type_scan == 'OUT_SM' ? 'btn-success' : 'btn-outline-success' ?>">
                                     Out Supermarket
                                 </a>
 
