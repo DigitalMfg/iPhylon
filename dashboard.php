@@ -29,6 +29,17 @@ if(mysqli_num_rows($getShift) > 0)
     $shiftNow = $shift['shift'];
 }
 
+/* ===========================================================
+   FILTER DASHBOARD
+=========================================================== */
+
+$currentDate  = date('Y-m-d');
+$currentShift = $shiftNow;
+
+// Jika user memilih history
+$selectedDate  = $_GET['tanggal'] ?? $currentDate;
+$selectedShift = $_GET['shift'] ?? $currentShift;
+
 /*
 |--------------------------------------------------------------------------
 | DASHBOARD SUMMARY
@@ -66,22 +77,22 @@ $totalProduction = mysqli_fetch_assoc($sqlProduction)['total'];
 
 // Total Stock Supermarket
 $sqlStockSM = mysqli_query($conn,"
-    SELECT
-    (
-        SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
-        FROM tbl_transaction_scan ts
-        INNER JOIN tbl_master_barcode mb
-            ON ts.qr_code = mb.qr_code
-        WHERE ts.type_scan='IN_SM'
-    )
-    -
-    (
-        SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
-        FROM tbl_transaction_scan ts
-        INNER JOIN tbl_master_barcode mb
-            ON ts.qr_code = mb.qr_code
-        WHERE ts.type_scan='OUT_SM'
-    ) AS total
+SELECT
+(
+    SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
+    FROM tbl_transaction_scan ts
+    INNER JOIN tbl_master_barcode mb
+        ON ts.qr_code = mb.qr_code
+    WHERE ts.type_scan='IN_SM'
+)
+-
+(
+    SELECT COALESCE(SUM(CAST(mb.qty AS UNSIGNED)),0)
+    FROM tbl_transaction_scan ts
+    INNER JOIN tbl_master_barcode mb
+        ON ts.qr_code = mb.qr_code
+    WHERE ts.type_scan='OUT_SM'
+) AS total
 ");
 $totalStockSM = mysqli_fetch_assoc($sqlStockSM)['total'];
 
@@ -145,9 +156,9 @@ FROM
     INNER JOIN tbl_daily_plan_detail d
         ON h.id_daily_header = d.id_daily_header
 
-    WHERE h.tanggal_plan = CURDATE()
+    WHERE h.tanggal_plan = '$selectedDate'
     AND d.type = 'PLAN'
-    AND d.shift = '$shiftNow'
+    AND d.shift = '$selectedShift'
 
     GROUP BY h.line_produksi
 
@@ -165,15 +176,14 @@ LEFT JOIN
         ON m.qr_code = t.qr_code
 
     WHERE t.type_scan = 'OUT_PACKING'
-    AND t.shift = '$shiftNow'
-    AND DATE(t.date_scan) = CURDATE()
+    AND t.shift = '$selectedShift'
+    AND DATE(t.date_scan) = '$selectedDate'
 
     GROUP BY t.cost_center
 
 ) k
 
 ON CONCAT('Line ', p.line_produksi) = k.cost_center
-
 ORDER BY p.line_produksi
 
 ");
@@ -185,9 +195,7 @@ $packingData = [];
 while($row = mysqli_fetch_assoc($chartData))
 {
     $labels[] = "Line ".$row['line_produksi'];
-
     $planData[] = (int)$row['total_plan'];
-
     $packingData[] = (int)$row['total_packing'];
 }
 ?>
@@ -278,7 +286,7 @@ while($row = mysqli_fetch_assoc($chartData))
 
                     <div class="col-sm-6 text-right">
                         <h5>
-                            <?= date('d F Y '); ?> | Shift : <?= $shiftNow; ?>
+                            <?= date('d F Y', strtotime($selectedDate)); ?> | Shift : <?= $selectedShift; ?>
                         </h5>
                     </div>
                 </div>
@@ -288,7 +296,7 @@ while($row = mysqli_fetch_assoc($chartData))
         <!-- CONTENT -->
         <section class="content">
             <div class="container-fluid">
-
+                
                 <!-- Stat Cards -->
                 <div class="row mt-12">
                     <div class="col-lg">
@@ -400,7 +408,46 @@ while($row = mysqli_fetch_assoc($chartData))
                             </div>
                         </div>
                     </div>
+                </div>
 
+                <!-- History -->
+                <div class="card mb-3">
+                    <div class="card-body">
+
+                        <form method="GET" class="d-flex justify-content-end align-items-center mb-0">
+
+                            <span>
+                                <h5 class="mb-0 mr-4 text-primary">
+                                <i class="fas fa-history"></i>
+                                History
+                                </h5>
+                            </span>
+
+                            <input
+                                type="date"
+                                name="tanggal"
+                                value="<?= $selectedDate ?>"
+                                class="form-control mr-2"
+                                style="width:180px;">
+
+                            <select
+                                name="shift"
+                                class="form-control mr-2"
+                                style="width:120px;">
+
+                                <option value="1" <?= $selectedShift==1?'selected':''; ?>>Shift 1</option>
+                                <option value="2" <?= $selectedShift==2?'selected':''; ?>>Shift 2</option>
+                                <option value="3" <?= $selectedShift==3?'selected':''; ?>>Shift 3</option>
+
+                            </select>
+
+                            <button class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+
+                        </form>
+
+                    </div>
                 </div>
 
                 <!-- CHART + LIVE -->
@@ -508,8 +555,8 @@ new Chart(ctx, {
 
 });
 
-setInterval(function(){
-    location.reload();
+setInterval(function () {
+    window.location.href = "dashboard.php";
 }, 120000);
 
 function loadDetail(line,type)
@@ -523,9 +570,10 @@ function loadDetail(line,type)
         type : 'POST',
 
         data : {
-            line : line,
-            type : type,
-            shift : <?= $shiftNow ?>
+            line    : line,
+            type    : type,
+            shift   : <?= json_encode($selectedShift) ?>,
+            tanggal : <?= json_encode($selectedDate) ?>
         },
 
         success:function(result)
@@ -546,10 +594,11 @@ function loadOutputPerHour(line,shift,item,colour)
 
         type : 'POST',
         data : {
-        line   : line,
-        shift  : shift,
-        item   : item,
-        colour : colour
+            line    : line,
+            shift   : shift,
+            tanggal : <?= json_encode($selectedDate) ?>,
+            item    : item,
+            colour  : colour
         },
 
         success:function(result)
@@ -613,5 +662,14 @@ $('#hourlyModal').on('hidden.bs.modal', function () {
         </div>
     </div>
 
+<script>
+    window.addEventListener('load', function () {
+
+        if (window.location.search !== '') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+    });
+</script>
 </body>
 </html>

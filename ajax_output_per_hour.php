@@ -1,17 +1,18 @@
 <?php
 require 'function.php';
 
-$line   = $_POST['line'];
-$shift  = $_POST['shift'];
-$item   = $_POST['item'];
-$colour = $_POST['colour'];
+$line     = $_POST['line'];
+$shift    = $_POST['shift'];
+$tanggal  = $_POST['tanggal'];
+$item     = $_POST['item'];
+$colour   = $_POST['colour'];
 $qHeader = mysqli_query($conn,"
     SELECT *
     FROM tbl_daily_plan_header
     WHERE line_produksi='$line'
     AND item='$item'
     AND colour='$colour'
-    AND tanggal_plan = CURDATE()
+    AND tanggal_plan = '$tanggal'
     LIMIT 1
 ");
 
@@ -40,7 +41,7 @@ INNER JOIN tbl_master_barcode m
 
 WHERE t.type_scan = 'OUT_PACKING'
 AND t.shift = '$shift'
-AND DATE(t.date_scan) = CURDATE()
+AND DATE(t.date_scan) = '$tanggal'
 AND m.line='$line'
 AND m.item='$item'
 AND m.colour='$colour'

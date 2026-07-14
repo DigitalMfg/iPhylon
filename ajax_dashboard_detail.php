@@ -1,14 +1,15 @@
 <?php
 require 'function.php';
 
-$line  = $_POST['line'];
-$shift = $_POST['shift'];
+$line     = $_POST['line'];
+$shift    = $_POST['shift'];
+$tanggal  = $_POST['tanggal'];
 
 $qHeader = mysqli_query($conn,"
     SELECT *
     FROM tbl_daily_plan_header
     WHERE line_produksi='$line'
-    AND tanggal_plan = CURDATE()
+    AND tanggal_plan = '$tanggal'
 ");
 
 if(mysqli_num_rows($qHeader)==0){
@@ -74,7 +75,7 @@ $typeList = [
 <div class="card card-primary">
     <div class="card-header">
         <h3 class="card-title">
-            SHIFT <?= $shift; ?>
+            SHIFT <?= $shift; ?> | <?= date('d M Y', strtotime($tanggal)); ?>
         </h3>
     </div>
 
@@ -109,7 +110,7 @@ $typeList = [
 
                                 WHERE t.type_scan='OUT_PACKING'
                                 AND t.shift='$shift'
-                                AND DATE(t.date_scan)=CURDATE()
+                                AND DATE(t.date_scan)='$tanggal'
 
                                 AND m.line='".$dp['line_produksi']."'
                                 AND m.item='".$dp['item']."'
