@@ -481,9 +481,38 @@ value="<?= $colour['colour']; ?>"
                         <td><?= $row['colour'] ?></td>
                         <td><?= $row['bucket'] ?></td>
                         <td><?= number_format($row['qty_order']) ?></td>
-                        <td><?= number_format($row['qty_in']) ?></td>
-                        <td><?= number_format($row['qty_out']) ?></td>
-                        <td><?= number_format($row['balance']) ?></td>
+                        <td class="text-center">
+                            <a href="#"
+                            class="detail-stock"
+                            data-type="IN_SM"
+                            data-item="<?= $row['item'] ?>"
+                            data-colour="<?= $row['colour'] ?>"
+                            data-bucket="<?= $row['bucket'] ?>">
+                                <?= number_format($row['qty_in']) ?>
+                                    </a>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a href="#"
+                                        class="detail-stock"
+                                        data-type="OUT_SM"
+                                        data-item="<?= $row['item'] ?>"
+                                        data-colour="<?= $row['colour'] ?>"
+                                        data-bucket="<?= $row['bucket'] ?>">
+                                            <?= number_format($row['qty_out']) ?>
+                                        </a>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <a href="#"
+                                        class="detail-stock"
+                                        data-type="STOCK"
+                                        data-item="<?= $row['item'] ?>"
+                                        data-colour="<?= $row['colour'] ?>"
+                                        data-bucket="<?= $row['bucket'] ?>">
+                                            <?= number_format($row['balance']) ?>
+                                        </a>
+                                    </td>
                     </tr>
                     <?php endforeach; ?>
                     
@@ -498,16 +527,37 @@ value="<?= $colour['colour']; ?>"
                             <?= number_format($total_order) ?>
                         </td>
 
-                        <td class="text-end">
-                            <?= number_format($total_in) ?>
+                        <td class="text-center">
+                            <a href="#"
+                            class="detail-stock"
+                            data-type="IN_SM"
+                            data-item=""
+                            data-colour=""
+                            data-bucket="">
+                                <?= number_format($total_in) ?>
+                            </a>
                         </td>
 
-                        <td class="text-end">
-                            <?= number_format($total_out) ?>
+                        <td class="text-center">
+                            <a href="#"
+                            class="detail-stock"
+                            data-type="OUT_SM"
+                            data-item=""
+                            data-colour=""
+                            data-bucket="">
+                                <?= number_format($total_out) ?>
+                            </a>
                         </td>
 
-                        <td class="text-end">
-                            <?= number_format($total_balance) ?>
+                        <td class="text-center">
+                            <a href="#"
+                            class="detail-stock"
+                            data-type="STOCK"
+                            data-item=""
+                            data-colour=""
+                            data-bucket="">
+                                <?= number_format($total_balance) ?>
+                            </a>
                         </td>
                     </tr>
                 </tfoot>
@@ -518,9 +568,9 @@ value="<?= $colour['colour']; ?>"
 
 </div>
 </section>
-
 </div>
 
+<?php include 'modal_stock_sm_ip.php'; ?>
 <!-- FOOTER -->
   <footer class="main-footer">
     <div class="float-right d-none d-sm-block">
@@ -543,7 +593,7 @@ value="<?= $colour['colour']; ?>"
 
 <script>
 
-$(function(){
+$(function () {
 
     $('.select2bs4').select2({
         theme: 'bootstrap4',
@@ -573,7 +623,46 @@ $(function(){
         ]
     });
 
-});
+    $(document).on("click", ".detail-stock", function (e) {
+        e.preventDefault();
+        var type = $(this).data("type");
+        var item = $(this).data("item");
+        var colour = $(this).data("colour");
+        var bucket = $(this).data("bucket");
+        
+        // SET LINK DOWNLOAD EXCEL DI MODAL
+        var exportUrl =
+            "export_stock_sm_ip_detail.php?" +
+            "type=" + encodeURIComponent(type) +
+            "&item=" + encodeURIComponent(item) +
+            "&colour=" + encodeURIComponent(colour) +
+            "&bucket=" + encodeURIComponent(bucket);
+
+        $("#btnExportDetail").attr("href", exportUrl);
+
+        $("#modalDetailStock").modal("show");
+        $("#modalDetailBody").html("<div class='text-center p-3'>Loading...</div>");
+
+        $.ajax({
+
+            url: "ajax_stock_sm_ip_detail.php",
+
+            type: "POST",
+
+            data: {
+                type: type,
+                item: item,
+                colour: colour,
+                bucket: bucket
+            },
+            success: function (html) {
+                $("#modalDetailBody").html(html);
+            }
+        });
+
+    });
+
+}); 
 
 </script>
 
