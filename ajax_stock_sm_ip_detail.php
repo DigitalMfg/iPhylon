@@ -80,14 +80,9 @@ if($isTotal){
 
                 FROM tbl_master_barcode
 
-                GROUP BY
-                    style,
-                    item,
-                    gender,
-                    colour,
-                    bucket,
-                    size
-
+                WHERE
+                    bucket BETWEEN '$bucket_from' AND '$bucket_to'
+                    
             ) p
 
             LEFT JOIN
@@ -512,6 +507,7 @@ while($row = mysqli_fetch_assoc($sql)){
                 <?php
                 $grandOrder = 0;
                 $grandSize = [];
+                $grandTotalColumn = 0;
 
                 foreach($sizes as $s){
                     $grandSize[$s] = 0;
@@ -551,7 +547,7 @@ while($row = mysqli_fetch_assoc($sql)){
                     <td class="text-right font-weight-bold">
                         <?= number_format($rowTotal) ?>
                     </td>
-
+                        <?php $grandTotalColumn += $rowTotal; ?>
                 </tr>
 
                 <?php endforeach; ?>
@@ -576,7 +572,7 @@ while($row = mysqli_fetch_assoc($sql)){
                 <?php endforeach; ?>
 
                 <td class="text-right">
-                    <?= number_format($grandTotal) ?>
+                    <?= number_format($grandTotalColumn) ?>
                 </td>
 
             </tr>
