@@ -481,6 +481,7 @@ value="<?= $colour['colour']; ?>"
                         <td><?= $row['colour'] ?></td>
                         <td><?= $row['bucket'] ?></td>
                         <td><?= number_format($row['qty_order']) ?></td>
+                        
                         <td class="text-center">
                             <a href="#"
                             class="detail-stock"
@@ -533,8 +534,15 @@ value="<?= $colour['colour']; ?>"
                             data-type="IN_SM"
                             data-item=""
                             data-colour=""
-                            data-bucket="">
+                            data-bucket=""
+
+                            data-bucket-from="<?= $bucket_from ?>"
+                            data-bucket-to="<?= $bucket_to ?>"
+                            data-item-filter="<?= $item_filter ?>"
+                            data-colour-filter="<?= $colour_filter ?>">
+
                                 <?= number_format($total_in) ?>
+
                             </a>
                         </td>
 
@@ -544,8 +552,15 @@ value="<?= $colour['colour']; ?>"
                             data-type="OUT_SM"
                             data-item=""
                             data-colour=""
-                            data-bucket="">
+                            data-bucket=""
+
+                            data-bucket-from="<?= $bucket_from ?>"
+                            data-bucket-to="<?= $bucket_to ?>"
+                            data-item-filter="<?= $item_filter ?>"
+                            data-colour-filter="<?= $colour_filter ?>">
+
                                 <?= number_format($total_out) ?>
+
                             </a>
                         </td>
 
@@ -555,8 +570,15 @@ value="<?= $colour['colour']; ?>"
                             data-type="STOCK"
                             data-item=""
                             data-colour=""
-                            data-bucket="">
+                            data-bucket=""
+
+                            data-bucket-from="<?= $bucket_from ?>"
+                            data-bucket-to="<?= $bucket_to ?>"
+                            data-item-filter="<?= $item_filter ?>"
+                            data-colour-filter="<?= $colour_filter ?>">
+
                                 <?= number_format($total_balance) ?>
+
                             </a>
                         </td>
                     </tr>
@@ -629,14 +651,24 @@ $(function () {
         var item = $(this).data("item");
         var colour = $(this).data("colour");
         var bucket = $(this).data("bucket");
-        
+
+        var bucket_from   = $(this).data("bucket-from");
+        var bucket_to     = $(this).data("bucket-to");
+        var item_filter   = $(this).data("item-filter");
+        var colour_filter = $(this).data("colour-filter");
         // SET LINK DOWNLOAD EXCEL DI MODAL
         var exportUrl =
             "export_stock_sm_ip_detail.php?" +
             "type=" + encodeURIComponent(type) +
             "&item=" + encodeURIComponent(item) +
             "&colour=" + encodeURIComponent(colour) +
-            "&bucket=" + encodeURIComponent(bucket);
+            "&bucket=" + encodeURIComponent(bucket) +
+
+            // TAMBAHAN FILTER
+            "&bucket_from=" + encodeURIComponent(bucket_from || '') +
+            "&bucket_to=" + encodeURIComponent(bucket_to || '') +
+            "&item_filter=" + encodeURIComponent(item_filter || '') +
+            "&colour_filter=" + encodeURIComponent(colour_filter || '');
 
         $("#btnExportDetail").attr("href", exportUrl);
 
@@ -653,7 +685,13 @@ $(function () {
                 type: type,
                 item: item,
                 colour: colour,
-                bucket: bucket
+                bucket: bucket,
+
+                // TAMBAHAN FILTER
+                bucket_from: bucket_from,
+                bucket_to: bucket_to,
+                item_filter: item_filter,
+                colour_filter: colour_filter
             },
             success: function (html) {
                 $("#modalDetailBody").html(html);
