@@ -6,6 +6,11 @@ $item    = $_POST['item'];
 $colour  = $_POST['colour'];
 $bucket  = $_POST['bucket'];
 
+$bucket_from  = $_POST['bucket_from'] ?? '';
+$bucket_to    = $_POST['bucket_to'] ?? '';
+$item_filter  = $_POST['item_filter'] ?? '';
+$colour_filter= $_POST['colour_filter'] ?? '';
+
 $isTotal = ($item == '');
 
 $sizes = [
@@ -17,6 +22,19 @@ $sizes = [
 ];
 
 if($isTotal){
+    $filterWhere = "WHERE 1=1";
+
+    if($bucket_from != '' && $bucket_to != ''){
+        $filterWhere .= " AND bucket BETWEEN '$bucket_from' AND '$bucket_to'";
+    }
+
+    if($item_filter != ''){
+        $filterWhere .= " AND item='$item_filter'";
+    }
+
+    if($colour_filter != ''){
+        $filterWhere .= " AND colour='$colour_filter'";
+    }
 
     // =========================================
     // TOTAL STOCK
@@ -170,6 +188,7 @@ if($isTotal){
                     SUM(qty) AS qty_order
 
                 FROM tbl_master_barcode
+                $filterWhere
 
                 GROUP BY
                     style,
