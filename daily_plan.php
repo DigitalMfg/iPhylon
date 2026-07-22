@@ -352,31 +352,31 @@ $DailyPlan = mysqli_query($conn,"
                               foreach($sizes as $size):
 
                               if($type == 'PACKING')
-                                    {
-                                        $qPacking = mysqli_query($conn,"
-                                            SELECT
-                                                COALESCE(SUM(m.qty),0) AS total_qty
-                                            FROM tbl_transaction_scan t
+                                {
+                                    // item alternatif (karena ada barcode tanpa prefix NIKE)
+                                    $item1 = $dp['item'];
+                                    $item2 = str_replace('NIKE ','',$dp['item']);
 
-                                            INNER JOIN tbl_master_barcode m
-                                                ON m.qr_code = t.qr_code
+                                    $qPacking = mysqli_query($conn, "
+                                        SELECT COALESCE(SUM(m.qty),0) AS total_qty
+                                        FROM tbl_transaction_scan t
+                                        INNER JOIN tbl_master_barcode m
+                                            ON m.qr_code = t.qr_code
+                                        WHERE t.type_scan = 'OUT_PACKING'
+                                        AND t.shift = '$shift'
+                                        AND DATE(t.date_scan) = '".$dp['tanggal_plan']."'
+                                        AND m.line = '".$dp['line_produksi']."'
+                                        AND TRIM(UPPER(m.colour)) = TRIM(UPPER('".$dp['colour']."'))
+                                        AND (
+                                            m.item = '$item1'
+                                            OR m.item = '$item2'
+                                        )
+                                        AND m.size = '$size'
+                                    ");
 
-                                            WHERE
-                                                t.type_scan = 'OUT_PACKING'
-                                                AND t.shift = '$shift'
-                                                AND DATE(t.date_scan) = '".$dp['tanggal_plan']."'
-
-                                                AND m.no_jo = '".$dp['no_jo']."'
-                                                AND m.item = '".$dp['item']."'
-                                                AND m.colour = '".$dp['colour']."'
-                                                AND m.line = '".$dp['line_produksi']."'
-                                                AND m.size = '$size'
-                                        ");
-
-                                        $rPacking = mysqli_fetch_assoc($qPacking);
-
-                                        $qty = $rPacking['total_qty'];
-                                    }
+                                    $rPacking = mysqli_fetch_assoc($qPacking);
+                                    $qty = (int)($rPacking['total_qty'] ?? 0);
+                                }
                               else
                               {
                                   $q = mysqli_query($conn,"
