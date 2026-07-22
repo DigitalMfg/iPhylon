@@ -43,7 +43,8 @@ WHERE t.type_scan = 'OUT_PACKING'
 AND t.shift = '$shift'
 AND DATE(t.date_scan) = '$tanggal'
 AND m.line='$line'
-AND m.item='$item'
+
+-- cocokkan berdasarkan colour saja
 AND m.colour='$colour'
 
 GROUP BY
