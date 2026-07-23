@@ -18,8 +18,9 @@ $shiftNow = 1;
 $getShift = mysqli_query($conn,"
 SELECT shift
 FROM tbl_master_time
-WHERE CURDATE() = date
+WHERE date = CURDATE()
 AND CURTIME() BETWEEN time_start AND time_end
+ORDER BY id_time DESC
 LIMIT 1
 ");
 
@@ -81,19 +82,24 @@ ORDER BY CAST(line AS UNSIGNED)
 {
     if($shift == 1){
 
+        // Shift 1 mengambil Last WIP dari Shift 3 HARI YANG SAMA
         $lastShift = 3;
-        $tanggal = date('Y-m-d',strtotime('-1 day'));
-        }
-        elseif($shift == 2){
+        $tanggal = date('Y-m-d');
 
-            $lastShift = 1;
-            $tanggal = date('Y-m-d');
-        }
-        else{
-            // Shift 3 mengambil Last WIP dari Shift 2 HARI SEBELUMNYA
-            $lastShift = 2;
-            $tanggal = date('Y-m-d',strtotime('-1 day'));
-        }
+    }
+    elseif($shift == 2){
+
+        // Shift 2 mengambil Last WIP dari Shift 1 hari yang sama
+        $lastShift = 1;
+        $tanggal = date('Y-m-d');
+
+    }
+    else{
+
+        // Shift 3 mengambil Last WIP dari Shift 2 KEMARIN
+        $lastShift = 2;
+        $tanggal = date('Y-m-d',strtotime('-1 day'));
+    }
 
         $sql = mysqli_query($conn,"
         SELECT
@@ -213,19 +219,21 @@ ORDER BY CAST(line AS UNSIGNED)
 
     if($shiftNow == 1){
 
+    // Menutup Shift 3 yang baru selesai tadi pagi
     $lastShift = 3;
-    $lastDate = date('Y-m-d',strtotime('-1 day'));
+    $lastDate = date('Y-m-d');
 
     }
     elseif($shiftNow == 2){
 
+        // Menutup Shift 1 hari yang sama
         $lastShift = 1;
         $lastDate = date('Y-m-d');
 
     }
     else{
 
-        // Shift 3 harus menutup Shift 2 kemarin
+        // Shift 3 menutup Shift 2 kemarin
         $lastShift = 2;
         $lastDate = date('Y-m-d',strtotime('-1 day'));
 
