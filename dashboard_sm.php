@@ -1,6 +1,19 @@
 <?php
 // session_start();
 require 'function.php';
+require 'shift_helper.php';
+
+$current = getCurrentShift($conn);
+
+$currentDate  = $current['date'];
+$currentShift = $current['shift'];
+
+$listLine = mysqli_query($conn,"
+SELECT DISTINCT line
+FROM tbl_master_barcode
+WHERE line <> ''
+ORDER BY CAST(line AS UNSIGNED)
+");
 
 if (!isset($_SESSION['login'])) {
     header("Location: login.php");
@@ -50,22 +63,6 @@ if($shiftNow == 1){
 
 /*
 |--------------------------------------------------------------------------
-| AUTO CLOSE SHIFT SEBELUMNYA
-|--------------------------------------------------------------------------
-*/
-
-mysqli_query($conn,"
-UPDATE tbl_shift_wip
-
-SET status='CLOSE'
-
-WHERE tanggal='$lastDate'
-AND shift='$lastShift'
-AND status='OPEN'
-");
-
-/*
-|--------------------------------------------------------------------------
 | LIST LINE
 |--------------------------------------------------------------------------
 */
@@ -77,167 +74,6 @@ WHERE line IS NOT NULL
 AND line <> ''
 ORDER BY CAST(line AS UNSIGNED)
 ");
-
-    function getLastWIP($conn, $line, $shift)
-{
-    if($shift == 1){
-
-        // Shift 1 mengambil Last WIP dari Shift 3 HARI YANG SAMA
-        $lastShift = 3;
-        $tanggal = date('Y-m-d');
-
-    }
-    elseif($shift == 2){
-
-        // Shift 2 mengambil Last WIP dari Shift 1 hari yang sama
-        $lastShift = 1;
-        $tanggal = date('Y-m-d');
-
-    }
-    else{
-
-        // Shift 3 mengambil Last WIP dari Shift 2 KEMARIN
-        $lastShift = 2;
-        $tanggal = date('Y-m-d',strtotime('-1 day'));
-    }
-
-        $sql = mysqli_query($conn,"
-        SELECT
-            production_wip,
-            sm_wip
-        FROM tbl_shift_wip
-        WHERE tanggal='$tanggal'
-        AND shift='$lastShift'
-        AND line='$line'
-        AND status='CLOSE'
-        LIMIT 1
-        ");
-
-    if(mysqli_num_rows($sql) > 0)
-    {
-        $row = mysqli_fetch_assoc($sql);
-
-        return [
-            'production'=>$row['production_wip'],
-            'sm'=>$row['sm_wip']
-        ];
-    }
-
-    return [
-        'production'=>0,
-        'sm'=>0
-    ];
-}
-// ==================================================
-// SAVE SHIFT WIP
-// ==================================================
-    function saveShiftWIP(
-        $conn,
-        $tanggal,
-        $shift,
-        $line,
-        $productionLast,
-        $productionScanOut,
-        $productionWIP,
-        $smLast,
-        $smScanIn,
-        $smScanOut,
-        $smWIP
-    ){
-
-        // Cek apakah shift sudah CLOSE
-        $cek = mysqli_query($conn,"
-        SELECT status
-        FROM tbl_shift_wip
-        WHERE tanggal='$tanggal'
-        AND shift='$shift'
-        AND line='$line'
-        LIMIT 1
-        ");
-
-    if(mysqli_num_rows($cek) > 0){
-        $row = mysqli_fetch_assoc($cek);
-        if($row['status'] == 'CLOSE'){
-            return;
-        }
-    }
-            mysqli_query($conn,"
-            INSERT INTO tbl_shift_wip(
-
-            tanggal,
-            shift,
-            line,
-
-            production_last_wip,
-            production_scan_out,
-            production_wip,
-
-            sm_last_wip,
-            sm_scan_in,
-            sm_scan_out,
-            sm_wip,
-
-            status
-
-            )
-
-            VALUES(
-
-            '$tanggal',
-            '$shift',
-            '$line',
-
-            '$productionLast',
-            '$productionScanOut',
-            '$productionWIP',
-
-            '$smLast',
-            '$smScanIn',
-            '$smScanOut',
-            '$smWIP',
-
-            'OPEN'
-
-            )
-
-            ON DUPLICATE KEY UPDATE
-
-            production_last_wip = VALUES(production_last_wip),
-            production_scan_out = VALUES(production_scan_out),
-            production_wip      = VALUES(production_wip),
-
-            sm_last_wip         = VALUES(sm_last_wip),
-            sm_scan_in          = VALUES(sm_scan_in),
-            sm_scan_out         = VALUES(sm_scan_out),
-            sm_wip              = VALUES(sm_wip),
-
-            status='OPEN'
-            ");
-
-}
-    $today = date('Y-m-d');
-
-    if($shiftNow == 1){
-
-    // Menutup Shift 3 yang baru selesai tadi pagi
-    $lastShift = 3;
-    $lastDate = date('Y-m-d');
-
-    }
-    elseif($shiftNow == 2){
-
-        // Menutup Shift 1 hari yang sama
-        $lastShift = 1;
-        $lastDate = date('Y-m-d');
-
-    }
-    else{
-
-        // Shift 3 menutup Shift 2 kemarin
-        $lastShift = 2;
-        $lastDate = date('Y-m-d',strtotime('-1 day'));
-
-}
 
 ?>
 
@@ -486,79 +322,40 @@ ORDER BY CAST(line AS UNSIGNED)
                                     <?php while($line=mysqli_fetch_assoc($listLine)): ?>
                                     <?php
                                     $lineNo = $line['line'];
-                                    $last = getLastWIP($conn,$lineNo,$shiftNow);
-                                    $productionLast = $last['production'];
-                                    $smLast         = $last['sm'];
+                                    $sqlWip = mysqli_query($conn,"
+                                        SELECT *
+                                        FROM tbl_shift_wip
+                                        WHERE
+                                        tanggal = CURDATE()
+                                        AND shift = '$shiftNow'
+                                        AND line = '$lineNo'
+                                        LIMIT 1
+                                        ");
 
-                                    // ==========================
-                                    // Scan Out Packing
-                                    // ==========================
-                                    $sqlPacking = mysqli_query($conn,"
-                                    SELECT COALESCE(SUM(mb.qty),0) total
-                                    FROM tbl_transaction_scan ts
-                                    INNER JOIN tbl_master_barcode mb
-                                    ON ts.qr_code = mb.qr_code
-                                    WHERE ts.type_scan='OUT_PACKING'
-                                    AND ts.shift='$shiftNow'
-                                    AND DATE(ts.date_scan)=CURDATE()
-                                    AND mb.line='$lineNo'
-                                    ");
+                                        if(mysqli_num_rows($sqlWip))
+                                        {
+                                            $row = mysqli_fetch_assoc($sqlWip);
 
-                                    $productionScanOut = mysqli_fetch_assoc($sqlPacking)['total'];
+                                            $productionLast    = $row['production_last_wip'];
+                                            $productionScanOut = $row['production_scan_out'];
+                                            $productionWIP     = $row['production_wip'];
 
-                                    // ==========================
-                                    // Scan In Supermarket
-                                    // ==========================
-                                    $sqlInSM = mysqli_query($conn,"
-                                    SELECT COALESCE(SUM(mb.qty),0) total
-                                    FROM tbl_transaction_scan ts
-                                    INNER JOIN tbl_master_barcode mb
-                                    ON ts.qr_code = mb.qr_code
-                                    WHERE ts.type_scan='IN_SM'
-                                    AND ts.shift='$shiftNow'
-                                    AND DATE(ts.date_scan)=CURDATE()
-                                    AND mb.line='$lineNo'
-                                    ");
-                                    $smScanIn = mysqli_fetch_assoc($sqlInSM)['total'];
-                                    // ==========================
-                                    // Scan Out Supermarket
-                                    // ==========================
+                                            $smLast            = $row['sm_last_wip'];
+                                            $smScanIn          = $row['sm_scan_in'];
+                                            $smScanOut         = $row['sm_scan_out'];
+                                            $smWIP             = $row['sm_wip'];
+                                        }
+                                        else
+                                        {
+                                            $productionLast    = 0;
+                                            $productionScanOut = 0;
+                                            $productionWIP     = 0;
 
-                                    $sqlOutSM = mysqli_query($conn,"
-                                    SELECT COALESCE(SUM(mb.qty),0) total
-                                    FROM tbl_transaction_scan ts
-                                    INNER JOIN tbl_master_barcode mb
-                                    ON ts.qr_code = mb.qr_code
-                                    WHERE ts.type_scan='OUT_SM'
-                                    AND ts.shift='$shiftNow'
-                                    AND DATE(ts.date_scan)=CURDATE()
-                                    AND mb.line='$lineNo'
-                                    ");
-
-                                    $smScanOut = mysqli_fetch_assoc($sqlOutSM)['total'];
-
-                                    // ==========================
-                                    // HITUNG WIP
-                                    // ==========================
-                                    $productionWIP = $productionLast + $productionScanOut - $smScanIn;
-                                    $smWIP = $smLast + $smScanIn - $smScanOut;
-                                    $saveDate = ($shiftNow == 3)
-                                        ? date('Y-m-d')
-                                        : date('Y-m-d');
-
-                                    saveShiftWIP(
-                                        $conn,
-                                        $saveDate,
-                                        $shiftNow,
-                                        $lineNo,
-                                        $productionLast,
-                                        $productionScanOut,
-                                        $productionWIP,
-                                        $smLast,
-                                        $smScanIn,
-                                        $smScanOut,
-                                        $smWIP
-                                    );
+                                            $smLast            = 0;
+                                            $smScanIn          = 0;
+                                            $smScanOut         = 0;
+                                            $smWIP             = 0;
+                                        }
                                     ?>
                                     <tr>
                                         <td class="text-center"><?= $lineNo ?></td>
