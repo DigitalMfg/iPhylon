@@ -413,9 +413,20 @@ ORDER BY CAST(line AS UNSIGNED)
 
 <script>
 
+function runCron(){
+    $.get("cron_shift_wip.php?t=" + new Date().getTime());
+}
+
+// Jalankan cron saat halaman pertama dibuka
+runCron();
+
+// Jalankan cron setiap 2 detik
+setInterval(runCron,2000);
+
+// Refresh dashboard setiap 1 menit
 setInterval(function(){
     location.reload();
-},120000);
+},60000);
 
 </script>
 
