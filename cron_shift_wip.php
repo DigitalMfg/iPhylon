@@ -17,7 +17,7 @@ $current = getCurrentShift($conn);
 $currentDate  = $current['date'];
 $currentShift = $current['shift'];
 
-$previous = getPreviousShift($currentDate,$currentShift);
+$previous = getPreviousShift($conn,$currentDate,$currentShift);
 
 
 $previousDate  = $previous['date'];

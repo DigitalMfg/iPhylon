@@ -21,7 +21,7 @@ function getCurrentShift($conn)
     ];
 }
 
-function getPreviousShift($date, $shift)
+function getPreviousShift($conn,$date,$shift)
 {
     if($shift == 1)
     {
@@ -34,10 +34,29 @@ function getPreviousShift($date, $shift)
 
     if($shift == 2)
     {
-        // Shift 2 mengambil Last WIP dari Shift 1 di hari yang sama
+        // Shift 3 mengambil Shift 2 terakhir yang tersedia
+
+        $sql = mysqli_query($conn,"
+            SELECT tanggal
+            FROM tbl_shift_wip
+            WHERE shift=2
+            ORDER BY tanggal DESC
+            LIMIT 1
+        ");
+
+        if(mysqli_num_rows($sql))
+        {
+            $row = mysqli_fetch_assoc($sql);
+
+            return [
+                'date'  => $row['tanggal'],
+                'shift' => 2
+            ];
+        }
+
         return [
             'date'  => $date,
-            'shift' => 1
+            'shift' => 2
         ];
     }
 
