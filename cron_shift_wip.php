@@ -43,9 +43,44 @@ while($line = mysqli_fetch_assoc($listLine))
     $lineNo = $line['line'];
 
     /*
-    |--------------------------------------------------------------------------
-    | LAST WIP SHIFT SEBELUMNYA
-    |--------------------------------------------------------------------------
+|--------------------------------------------------------------------------
+| CEK APAKAH SHIFT SAAT INI SUDAH ADA
+|--------------------------------------------------------------------------
+*/
+
+$sqlCurrent = mysqli_query($conn,"
+    SELECT
+        production_last_wip,
+        sm_last_wip
+    FROM tbl_shift_wip
+    WHERE tanggal='$currentDate'
+    AND shift='$currentShift'
+    AND line='$lineNo'
+    LIMIT 1
+");
+
+if(mysqli_num_rows($sqlCurrent))
+{
+    /*
+    ------------------------------------------------------------
+    Record sudah ada.
+    Berarti Last WIP jangan diubah lagi.
+    ------------------------------------------------------------
+    */
+
+    $rowCurrent = mysqli_fetch_assoc($sqlCurrent);
+
+    $productionLast = $rowCurrent['production_last_wip'];
+    $smLast         = $rowCurrent['sm_last_wip'];
+
+}
+else
+{
+    /*
+    ------------------------------------------------------------
+    Shift baru dimulai.
+    Ambil Last WIP dari shift sebelumnya.
+    ------------------------------------------------------------
     */
 
     $sqlLast = mysqli_query($conn,"
@@ -72,6 +107,7 @@ while($line = mysqli_fetch_assoc($listLine))
         $productionLast = 0;
         $smLast         = 0;
     }
+}
 
     /*
     |--------------------------------------------------------------------------
