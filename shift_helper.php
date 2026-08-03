@@ -23,23 +23,69 @@ function getCurrentShift($conn)
 
 function getPreviousShift($conn,$date,$shift)
 {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shift 1
+    |--------------------------------------------------------------------------
+    | Ambil Shift 3 terakhir yang tersedia
+    | (aman jika ada libur Sabtu/Minggu)
+    */
+
     if($shift == 1)
     {
-        // Shift 1 mengambil Last WIP dari Shift 3 di hari yang sama
-        return [
-            'date'  => $date,
-            'shift' => 3
-        ];
-    }
-
-    if($shift == 2)
-    {
-        // Shift 3 mengambil Shift 2 terakhir yang tersedia
-
         $sql = mysqli_query($conn,"
             SELECT tanggal
             FROM tbl_shift_wip
-            WHERE shift=2
+            WHERE shift = 3
+            AND tanggal < '$date'
+            ORDER BY tanggal DESC
+            LIMIT 1
+        ");
+
+        if(mysqli_num_rows($sql))
+        {
+            $row = mysqli_fetch_assoc($sql);
+
+            return [
+                'date'  => $row['tanggal'],
+                'shift' => 3
+            ];
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shift 2
+    |--------------------------------------------------------------------------
+    | Selalu mengambil Shift 1 hari yang sama
+    */
+
+    if($shift == 2)
+    {
+        return [
+            'date'  => $date,
+            'shift' => 1
+        ];
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Shift 3
+    |--------------------------------------------------------------------------
+    | Ambil Shift 2 terakhir yang tersedia
+    | (aman jika melewati libur)
+    */
+
+    if($shift == 3)
+    {
+        $sql = mysqli_query($conn,"
+            SELECT tanggal
+            FROM tbl_shift_wip
+            WHERE shift = 2
+            AND tanggal <= '$date'
             ORDER BY tanggal DESC
             LIMIT 1
         ");
@@ -53,16 +99,11 @@ function getPreviousShift($conn,$date,$shift)
                 'shift' => 2
             ];
         }
-
-        return [
-            'date'  => $date,
-            'shift' => 2
-        ];
     }
 
-    // Shift 3 mengambil Last WIP dari Shift 2 hari sebelumnya
+
     return [
-        'date'  => date('Y-m-d', strtotime($date.' -1 day')),
-        'shift' => 2
+        'date'  => $date,
+        'shift' => 1
     ];
 }
