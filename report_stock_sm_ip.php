@@ -540,9 +540,7 @@ value="<?= $colour['colour']; ?>"
                             data-bucket-to="<?= $bucket_to ?>"
                             data-item-filter="<?= $item_filter ?>"
                             data-colour-filter="<?= $colour_filter ?>">
-
                                 <?= number_format($total_in) ?>
-
                             </a>
                         </td>
 
@@ -558,9 +556,7 @@ value="<?= $colour['colour']; ?>"
                             data-bucket-to="<?= $bucket_to ?>"
                             data-item-filter="<?= $item_filter ?>"
                             data-colour-filter="<?= $colour_filter ?>">
-
                                 <?= number_format($total_out) ?>
-
                             </a>
                         </td>
 
@@ -576,9 +572,7 @@ value="<?= $colour['colour']; ?>"
                             data-bucket-to="<?= $bucket_to ?>"
                             data-item-filter="<?= $item_filter ?>"
                             data-colour-filter="<?= $colour_filter ?>">
-
                                 <?= number_format($total_balance) ?>
-
                             </a>
                         </td>
                     </tr>
