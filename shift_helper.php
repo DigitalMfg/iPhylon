@@ -21,89 +21,85 @@ function getCurrentShift($conn)
     ];
 }
 
-function getPreviousShift($conn,$date,$shift)
-{
 
+function getPreviousShift($conn, $date, $shift)
+{
     /*
     |--------------------------------------------------------------------------
-    | Shift 1
+    | Tentukan shift sebelumnya
     |--------------------------------------------------------------------------
-    | Ambil Shift 3 terakhir yang tersedia
-    | (aman jika ada libur Sabtu/Minggu)
+    |
+    | Shift 1 -> Shift 3
+    | Shift 2 -> Shift 1
+    | Shift 3 -> Shift 2
+    |
     */
 
     if($shift == 1)
     {
-        $sql = mysqli_query($conn,"
-            SELECT tanggal
-            FROM tbl_shift_wip
-            WHERE shift = 3
-            AND tanggal < '$date'
-            ORDER BY tanggal DESC
-            LIMIT 1
-        ");
-
-        if(mysqli_num_rows($sql))
-        {
-            $row = mysqli_fetch_assoc($sql);
-
-            return [
-                'date'  => $row['tanggal'],
-                'shift' => 3
-            ];
-        }
+        $previousShift = 3;
+    }
+    elseif($shift == 2)
+    {
+        $previousShift = 1;
+    }
+    elseif($shift == 3)
+    {
+        $previousShift = 2;
+    }
+    else
+    {
+        $previousShift = 3;
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Shift 2
+    | Cari WIP terakhir dari shift sebelumnya
     |--------------------------------------------------------------------------
-    | Selalu mengambil Shift 1 hari yang sama
+    |
+    | TIDAK memperhatikan tanggal.
+    |
+    | Yang dicari adalah record terakhir berdasarkan:
+    | tanggal DESC
+    | id DESC
+    |
     */
 
-    if($shift == 2)
+    $sql = mysqli_query($conn,"
+        SELECT tanggal, shift
+        FROM tbl_shift_wip
+        WHERE shift = '$previousShift'
+        ORDER BY tanggal DESC, id DESC
+        LIMIT 1
+    ");
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Jika ditemukan
+    |--------------------------------------------------------------------------
+    */
+
+    if(mysqli_num_rows($sql))
     {
+        $row = mysqli_fetch_assoc($sql);
+
         return [
-            'date'  => $date,
-            'shift' => 1
+            'date'  => $row['tanggal'],
+            'shift' => $row['shift']
         ];
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Shift 3
+    | Jika belum ada data shift sebelumnya
     |--------------------------------------------------------------------------
-    | Ambil Shift 2 terakhir yang tersedia
-    | (aman jika melewati libur)
     */
-
-    if($shift == 3)
-    {
-        $sql = mysqli_query($conn,"
-            SELECT tanggal
-            FROM tbl_shift_wip
-            WHERE shift = 2
-            AND tanggal <= '$date'
-            ORDER BY tanggal DESC
-            LIMIT 1
-        ");
-
-        if(mysqli_num_rows($sql))
-        {
-            $row = mysqli_fetch_assoc($sql);
-
-            return [
-                'date'  => $row['tanggal'],
-                'shift' => 2
-            ];
-        }
-    }
-
 
     return [
         'date'  => $date,
-        'shift' => 1
+        'shift' => $previousShift
     ];
 }

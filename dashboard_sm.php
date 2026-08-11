@@ -307,7 +307,7 @@ function runCron(){
 runCron();
 
 // Jalankan cron setiap 2 detik
-setInterval(runCron,2000);
+setInterval(runCron,10000);
 
 // Refresh dashboard setiap 1 menit
 setInterval(function(){
