@@ -42,14 +42,16 @@ if (isset($_POST['outSupermarket'])) {
     $date_scan        = date('Y-m-d');
     $current_time     = date('H:i:s');
 
-    // =========================================
+      // =========================================
     // CEK HOUR & SHIFT
     // =========================================
     $getTime = mysqli_query($conn,"
         SELECT *
         FROM tbl_master_time
-        WHERE '$current_time'
-        BETWEEN time_start AND time_end
+        WHERE date = '$date_scan'
+          AND '$current_time' BETWEEN time_start AND time_end
+        ORDER BY id_time ASC
+        LIMIT 1
     ");
 
     $dataTime = mysqli_fetch_assoc($getTime);
