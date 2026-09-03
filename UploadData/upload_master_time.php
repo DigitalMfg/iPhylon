@@ -36,13 +36,10 @@ if(isset($_POST['upload'])){
 
     if($header != $template){
 
-        echo "
-        <script>
-            alert('FORMAT TEMPLATE SALAH');
-            window.location='../master_time.php';
-        </script>
-        ";
+        $_SESSION['status']  = 'error';
+        $_SESSION['message'] = 'Master Time template format is invalid.';
 
+        header('Location: ../master_time.php');
         exit;
     }
 
@@ -140,7 +137,11 @@ if(isset($_POST['upload'])){
     // =========================================
     // REDIRECT SUCCESS
     // =========================================
-    header('Location: ../master_time.php?success=1');
+    $_SESSION['status']  = 'success';
+    $_SESSION['message'] = 'Master Time has been successfully uploaded.';
+
+    header('Location: ../master_time.php');
+    exit;
 
 }
 ?>

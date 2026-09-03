@@ -674,7 +674,7 @@ $(function(){
                 extend: 'excelHtml5',
                 text: 'Export Excel',
                 className: 'btn btn-success btn-sm',
-                title: 'Report Input SM by Size'
+                title: 'Report Output by Size'
             }
         ]
     });
