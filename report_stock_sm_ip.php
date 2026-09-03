@@ -230,27 +230,47 @@ $listColour = mysqli_query($conn,"
 ?>
 
 <style>
-.dataTables_wrapper {
-    width: 100% !important;
+
+.dataTables_wrapper{
+    width:100%;
 }
 
-.dataTables_length {
-    float: left !important;
+.table-responsive{
+    overflow-x:auto;
 }
 
-.dataTables_filter {
-    float: right !important;
+#ReportStock{
+    width:100% !important;
 }
 
-.dataTables_info {
-    float: left !important;
-    margin-top: 10px;
+#ReportStock th,
+#ReportStock td{
+    white-space:nowrap;
+    vertical-align:middle;
 }
 
-.dataTables_paginate {
-    float: right !important;
-    margin-top: 10px;
+.content-wrapper{
+    overflow-x:hidden;
 }
+
+.dataTables_length{
+    float:left;
+}
+
+.dataTables_filter{
+    float:right;
+}
+
+.dataTables_info{
+    float:left;
+    margin-top:10px;
+}
+
+.dataTables_paginate{
+    float:right;
+    margin-top:10px;
+}
+
 </style>
 
 <!DOCTYPE html>
@@ -842,7 +862,11 @@ $(function () {
 
     $('#ReportStock').DataTable({
 
-        responsive: true,
+        responsive: false,
+        scrollX: true,
+        scrollCollapse: true,
+        autoWidth: false,
+
         paging: true,
         searching: true,
         ordering: true,

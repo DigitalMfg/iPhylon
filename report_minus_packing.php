@@ -176,23 +176,42 @@ $listColour = mysqli_query($conn,"
     width: 100% !important;
 }
 
+.table-responsive {
+    overflow-x: auto;
+}
+
+#reportMinus {
+    width: 100% !important;
+}
+
+#reportMinus th,
+#reportMinus td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.content-wrapper {
+    overflow-x: hidden;
+}
+
 .dataTables_length {
-    float: left !important;
+    float: left;
 }
 
 .dataTables_filter {
-    float: right !important;
+    float: right;
 }
 
 .dataTables_info {
-    float: left !important;
+    float: left;
     margin-top: 10px;
 }
 
 .dataTables_paginate {
-    float: right !important;
+    float: right;
     margin-top: 10px;
 }
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -489,11 +508,16 @@ $(function(){
         allowClear: true
     });
 
-    $('#reportMinus').DataTable({
-        responsive: true,
+        $('#reportMinus').DataTable({
+        responsive: false,
+        scrollX: true,
+        scrollCollapse: true,
+        autoWidth: false,
+
         paging: true,
         searching: true,
         ordering: true,
+
         lengthMenu: [10, 25, 50, 100, 250, 500],
 
         dom:

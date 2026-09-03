@@ -207,23 +207,42 @@ $listTypeScan = mysqli_query($conn,"
     width: 100% !important;
 }
 
+.table-responsive {
+    overflow-x: auto;
+}
+
+#reportMinus {
+    width: 100% !important;
+}
+
+#reportMinus th,
+#reportMinus td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.content-wrapper {
+    overflow-x: hidden;
+}
+
 .dataTables_length {
-    float: left !important;
+    float: left;
 }
 
 .dataTables_filter {
-    float: right !important;
+    float: right;
 }
 
 .dataTables_info {
-    float: left !important;
+    float: left;
     margin-top: 10px;
 }
 
 .dataTables_paginate {
-    float: right !important;
+    float: right;
     margin-top: 10px;
 }
+
 </style>
 <!DOCTYPE html>
 <html lang="en">
@@ -232,7 +251,7 @@ $listTypeScan = mysqli_query($conn,"
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>iPhylon | Report Stock SM IP</title>
+<title>iPhylon | Report Output by Size</title>
 
 <link rel="icon" href="assets/images/i.Phylon.png" type="image/x-icon">
 
@@ -260,7 +279,7 @@ $listTypeScan = mysqli_query($conn,"
                 <div class="col-sm-6">
                 <h1>
                 <i class="fas fa-chart-bar"></i>
-                Report Input SM by Size
+                Report Output by Size
                 </h1>
             </div>
 
@@ -270,7 +289,7 @@ $listTypeScan = mysqli_query($conn,"
                     <a href="index.php">Home</a>
                     </li>
                     <li class="breadcrumb-item active">
-                    Report Input SM by Size
+                    Report Output by Size
                     </li>
                 </ol>
             </div>
@@ -633,11 +652,16 @@ $(function(){
         allowClear: true
     });
 
-    $('#reportMinus').DataTable({
-        responsive: true,
+        $('#reportMinus').DataTable({
+        responsive: false,
+        scrollX: true,
+        scrollCollapse: true,
+        autoWidth: false,
+
         paging: true,
         searching: true,
         ordering: true,
+
         lengthMenu: [10, 25, 50, 100, 250, 500],
 
         dom:
