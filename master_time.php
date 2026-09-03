@@ -1,6 +1,93 @@
 <?php
 require 'function.php';
 
+// =========================
+// Notifikasi
+// =========================
+$status  = '';
+$message = '';
+
+if(isset($_SESSION['status'])){
+
+    $status  = $_SESSION['status'];
+    $message = $_SESSION['message'];
+
+    unset($_SESSION['status']);
+    unset($_SESSION['message']);
+}
+
+// =========================
+// UPDATE MASTER TIME
+// =========================
+if(isset($_POST['update_master_time'])){
+
+    $id_time    = mysqli_real_escape_string($conn, $_POST['id_time']);
+    $date       = mysqli_real_escape_string($conn, $_POST['date']);
+    $time_start = mysqli_real_escape_string($conn, $_POST['time_start']);
+    $time_end   = mysqli_real_escape_string($conn, $_POST['time_end']);
+    $hour       = mysqli_real_escape_string($conn, $_POST['hour']);
+    $shift      = mysqli_real_escape_string($conn, $_POST['shift']);
+
+    $update = mysqli_query($conn, "
+        UPDATE tbl_master_time
+        SET
+            date = '$date',
+            time_start = '$time_start',
+            time_end = '$time_end',
+            hour = '$hour',
+            shift = '$shift'
+        WHERE id_time = '$id_time'
+    ");
+
+    if($update){
+
+    $_SESSION['status']  = 'success';
+    $_SESSION['message'] = 'Master Time has been successfully updated.';
+
+    }else{
+
+        $_SESSION['status']  = 'error';
+        $_SESSION['message'] = 'Master Time has failed to update.';
+
+    }
+
+    header("Location: master_time.php");
+    exit;
+}
+
+
+// =========================
+// DELETE MASTER TIME
+// =========================
+if(isset($_GET['delete'])){
+
+    $id_time = mysqli_real_escape_string($conn, $_GET['delete']);
+
+    $delete = mysqli_query($conn, "
+        DELETE FROM tbl_master_time
+        WHERE id_time = '$id_time'
+    ");
+
+    if($delete){
+
+    $_SESSION['status']  = 'success';
+    $_SESSION['message'] = 'Master Time has been successfully deleted.';
+
+      }else{
+
+          $_SESSION['status']  = 'error';
+          $_SESSION['message'] = 'Master Time has failed to delete.';
+
+      }
+
+      header("Location: master_time.php");
+      exit;
+}
+
+
+// =========================
+// GET MASTER TIME
+// =========================
 $TransMaterial = mysqli_query($conn,"
     SELECT *
     FROM tbl_master_time
@@ -42,15 +129,7 @@ $TransMaterial = mysqli_query($conn,"
 
     <!-- Content Header -->
     <section class="content-header">
-      <!-- Notif Success -->
       <div class="container-fluid">
-        <?php if(isset($_GET['success'])) : ?>
-          <div id="successAlert"
-              class="alert alert-success alert-dismissible fade show">
-            Master Time berhasil diupload
-          </div>
-          <?php endif; ?>
-
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1>Master Time</h1>
@@ -185,29 +264,159 @@ $TransMaterial = mysqli_query($conn,"
                       <th>End Time</th>
                       <th>Hour</th>
                       <th>Shift</th>
+                      <th width="200" style="text-align: center;">Action</th>
 
                     </tr>
 
                   </thead>
 
                   <tbody>
-
                     <?php $i = 1; ?>
-
                     <?php foreach($TransMaterial as $TMtr) : ?>
+
                     <tr>
-                      <td><?= $i++; ?></td>
-                      <td><?= $TMtr['date']; ?></td>
-                      <td><?= $TMtr['time_start']; ?></td>
-                      <td><?= $TMtr['time_end']; ?></td>
-                      <td><?= $TMtr['hour']; ?></td>
-                      <td><?= $TMtr['shift']; ?></td>
-                    </tr>
+                        <td><?= $i++; ?></td>
+                        <td><?= $TMtr['date']; ?></td>
+                        <td><?= $TMtr['time_start']; ?></td>
+                        <td><?= $TMtr['time_end']; ?></td>
+                        <td><?= $TMtr['hour']; ?></td>
+                        <td><?= $TMtr['shift']; ?></td>
+                        <td style="text-align: center;">
+                            <!-- EDIT -->
+                            <button
+                                type="button"
+                                class="btn btn-warning btn-sm"
+                                data-toggle="modal"
+                                data-target="#editMasterTime<?= $TMtr['id_time']; ?>">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                              |
+                            <!-- HAPUS -->
+                            <button
+                                type="button"
+                                class="btn btn-danger btn-sm"
+                                onclick="deleteMasterTime(<?= $TMtr['id_time']; ?>)">
+                                <i class="fas fa-trash"></i>
+                                Delete
+                            </button>
+                        </td>
+                      </tr>
+
                     <?php endforeach; ?>
-                  </tbody>
+                    </tbody>
                 </table>
 
-                
+                <?php foreach($TransMaterial as $TMtr) : ?>
+                  <div class="modal fade"
+                      id="editMasterTime<?= $TMtr['id_time']; ?>">  
+                      <div class="modal-dialog">
+                          <div class="modal-content">
+                              <div class="modal-header bg-warning">
+                                  <h4 class="modal-title">
+                                      <i class="fas fa-edit"></i>
+                                      Edit Master Time
+                                  </h4>
+                                  <button type="button"
+                                          class="close"
+                                          data-dismiss="modal">
+                                      <span>&times;</span>
+                                  </button>
+                              </div>
+
+                              <form method="POST">
+                                  <div class="modal-body">
+                                      <!-- ID -->
+                                      <input type="hidden"
+                                            name="id_time"
+                                            value="<?= $TMtr['id_time']; ?>">
+                                      <!-- DATE -->
+                                      <div class="form-group">
+                                          <label>Date</label>
+                                          <input type="date"
+                                                name="date"
+                                                class="form-control"
+                                                value="<?= $TMtr['date']; ?>"
+                                                required>
+                                      </div>
+
+                                      <!-- START TIME -->
+                                      <div class="form-group">
+                                          <label>Start Time</label>
+                                          <input type="time"
+                                                name="time_start"
+                                                class="form-control"
+                                                value="<?= substr($TMtr['time_start'], 0, 5); ?>"
+                                                required>
+                                      </div>
+
+                                      <!-- END TIME -->
+                                      <div class="form-group">
+                                          <label>End Time</label>
+                                          <input type="time"
+                                                name="time_end"
+                                                class="form-control"
+                                                value="<?= substr($TMtr['time_end'], 0, 5); ?>"
+                                                required>
+                                      </div>
+
+                                      <!-- HOUR -->
+                                      <div class="form-group">
+                                          <label>Hour</label>
+                                          <input type="text"
+                                                name="hour"
+                                                class="form-control"
+                                                value="<?= htmlspecialchars($TMtr['hour']); ?>"
+                                                required>
+                                      </div>
+
+                                      <!-- SHIFT -->
+                                      <div class="form-group">
+                                          <label>Shift</label>
+                                          <select name="shift"
+                                                  class="form-control"
+                                                  required>
+                                              <option value="1"
+                                                  <?= $TMtr['shift'] == '1' ? 'selected' : ''; ?>>
+                                                  Shift 1
+                                              </option>
+
+                                              <option value="2"
+                                                  <?= $TMtr['shift'] == '2' ? 'selected' : ''; ?>>
+                                                  Shift 2
+                                              </option>
+
+                                              <option value="3"
+                                                  <?= $TMtr['shift'] == '3' ? 'selected' : ''; ?>>
+                                                  Shift 3
+                                              </option>
+                                          </select>
+                                      </div>
+                                  </div>
+
+                                  <div class="modal-footer">
+                                      <button type="button"
+                                              class="btn btn-secondary"
+                                              data-dismiss="modal">
+
+                                          <i class="fas fa-times"></i>
+                                          Cancel
+                                      </button>
+
+                                      <button type="submit"
+                                              name="update_master_time"
+                                              class="btn btn-warning">
+
+                                          <i class="fas fa-save"></i>
+                                          Save Changes
+                                      </button>
+                                  </div>
+                              </form>
+                           </div>
+                        </div>
+                    </div>
+                  <?php endforeach; ?>
+
               </div>
             </div>
           </div>
@@ -250,6 +459,8 @@ $TransMaterial = mysqli_query($conn,"
 <script src="plugins/datatables-buttons/js/buttons.html5.min.js"></script>
 <script src="plugins/datatables-buttons/js/buttons.print.min.js"></script>
 <script src="plugins/datatables-buttons/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 <!-- AdminLTE -->
 <script src="dist/js/adminlte.min.js"></script>
@@ -284,15 +495,55 @@ $(document).ready(function () {
 </script>
 
 <script>
-setTimeout(function(){
-    $('#successAlert').fadeOut('slow');
-}, 2000);
+  function deleteMasterTime(id_time){
+      Swal.fire({
+          title: 'Delete master time?',
+          text: 'Deleted data cannot be recovered',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: '<i class="fas fa-trash"></i> Delete',
+          cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+
+      }).then((result) => {
+
+          if(result.isConfirmed){
+              window.location.href =
+                  'master_time.php?delete=' + id_time;
+          }
+      });
+  }
 </script>
 
 <script>
-if(window.location.href.indexOf("?success=1") > -1){
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
+document.addEventListener('DOMContentLoaded', function(){
+
+    <?php if($status != ''): ?>
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: '<?= $status ?>',
+        title: '<?= $message ?>',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    // SUARA SUCCESS
+    <?php if($status == 'success'): ?>
+        new Audio('assets/sound/success.mp3').play();
+    <?php endif; ?>
+
+    // SUARA ERROR / WARNING
+    <?php if($status == 'error' || $status == 'warning'): ?>
+        new Audio('assets/sound/error.mp3').play();
+    <?php endif; ?>
+
+    <?php endif; ?>
+
+});
 </script>
 
 </body>
