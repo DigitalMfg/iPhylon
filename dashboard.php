@@ -230,6 +230,45 @@ while($row = mysqli_fetch_assoc($chartData))
       background:white;
       border-bottom:1px solid #f1f1f1;
   }
+
+  /* =========================
+   FIX HORIZONTAL SCROLL
+========================= */
+
+.content-wrapper {
+    overflow-x: hidden;
+}
+
+.card-body {
+    width: 100%;
+}
+
+/* Untuk tabel hasil AJAX */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    min-width: 100%;
+}
+
+/* Jangan biarkan isi tabel turun ke bawah */
+.table-responsive th,
+.table-responsive td {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Modal tidak menyebabkan halaman melebar */
+.modal-dialog {
+    max-width: 95%;
+}
+
+.modal-body {
+    overflow-x: auto;
+}
 </style>
 
 <!DOCTYPE html>
