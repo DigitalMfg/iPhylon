@@ -2413,28 +2413,288 @@ $(document).ready(function () {
                 "<'col-sm-7'p>" +
             ">",
 
-        buttons: [
+        buttons: [{
+            extend: 'excelHtml5',
 
-            {
-                extend: 'excelHtml5',
-                text:
-                    '<i class="fas fa-file-excel"></i> Export Excel',
-                className:
-                    'btn btn-success btn-sm',
-                title:
-                    'Report Minus Produksi IP',
-                filename:
-                    'Report_Minus_Produksi_IP',
+            text: '<i class="fas fa-file-excel"></i> Export Excel',
 
-                exportOptions: {
-                    columns: ':visible',
-                    modifier: {
-                        search: 'applied',
-                        order: 'applied'
-                    }
+            className: 'btn btn-success btn-sm',
+
+            title: 'Report Minus Produksi IP',
+
+            filename: 'Report_Minus_Produksi_IP',
+
+            footer: true,
+
+            exportOptions: {
+                columns: ':visible',
+
+                modifier: {
+                    search: 'applied',
+                    order: 'applied'
                 }
+            },
+
+        customize: function (xlsx) {
+
+        var sheet =
+            xlsx.xl.worksheets['sheet1.xml'];
+
+        var status =
+            $('#status').val();
+
+        /*
+        |--------------------------------------------------------------------------
+        | HANYA TAMBAHKAN GRAND TOTAL REMAINING
+        | JIKA STATUS = COMPARE
+        |--------------------------------------------------------------------------
+        */
+
+        if (status !== 'Compare') {
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DATA GRAND TOTAL REMAINING
+        |--------------------------------------------------------------------------
+        */
+
+        var grandRemainingData = [
+            '',
+            '',
+            '',
+            '',
+            'TOTAL',
+            <?= json_encode((float) $grandOrderTotal) ?>,
+            'Remaining',
+
+            <?php foreach ($sizes as $size): ?>
+
+                <?= json_encode(
+                    (float) ($grandRemaining[$size] ?? 0)
+                ) ?>,
+
+            <?php endforeach; ?>
+
+            <?= json_encode((float) $grandRemainingTotal) ?>
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FUNGSI NOMOR KOLOM EXCEL
+        |--------------------------------------------------------------------------
+        */
+
+        function getExcelColumn(index) {
+
+            var column = '';
+
+            index++;
+
+            while (index > 0) {
+
+                var remainder =
+                    (index - 1) % 26;
+
+                column =
+                    String.fromCharCode(
+                        65 + remainder
+                    ) + column;
+
+                index =
+                    Math.floor(
+                        (index - 1) / 26
+                    );
             }
-        ],
+
+            return column;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CARI BARIS TERAKHIR
+        |--------------------------------------------------------------------------
+        */
+
+        var rows =
+            $('sheetData row', sheet);
+
+        var lastRow =
+            parseInt(
+                rows.last().attr('r')
+            );
+
+        var newRow =
+            lastRow + 1;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STYLE EXCEL
+        |
+        | Kita ambil style dari Grand Total Actual Prod
+        | supaya Remaining punya format yang sama.
+        |--------------------------------------------------------------------------
+        */
+
+        var actualTotalRow =
+            rows.filter(function () {
+
+                return $(this)
+                    .find('c')
+                    .filter(function () {
+
+                        return $(this)
+                            .text()
+                            .trim() === 'Actual Prod';
+
+                    }).length > 0;
+
+            }).last();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | BUAT BARIS GRAND TOTAL REMAINING
+        |--------------------------------------------------------------------------
+        */
+
+        var rowXml =
+            '<row r="' +
+            newRow +
+            '">';
+
+
+        grandRemainingData.forEach(
+            function (value, index) {
+
+                var column =
+                    getExcelColumn(index);
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CELL KOSONG
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    value === '' ||
+                    value === null ||
+                    typeof value === 'undefined'
+                ) {
+
+                    rowXml +=
+                        '<c r="' +
+                        column +
+                        newRow +
+                        '"></c>';
+
+                    return;
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | STYLE
+                |--------------------------------------------------------------------------
+                */
+
+                var style = '';
+
+                if (
+                    actualTotalRow.length &&
+                    actualTotalRow
+                        .find('c')
+                        .eq(index)
+                        .attr('s')
+                ) {
+
+                    style =
+                        ' s="' +
+                        actualTotalRow
+                            .find('c')
+                            .eq(index)
+                            .attr('s') +
+                        '"';
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | TEXT
+                |
+                | TOTAL dan Remaining dibuat text.
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    index === 4 ||
+                    index === 6
+                ) {
+
+                    rowXml +=
+                        '<c r="' +
+                        column +
+                        newRow +
+                        '"' +
+                        style +
+                        ' t="inlineStr">' +
+                        '<is><t>' +
+                        value +
+                        '</t></is>' +
+                        '</c>';
+
+                }
+
+                /*
+                |--------------------------------------------------------------------------
+                | ANGKA
+                |
+                | Dibuat numeric agar Excel bisa SUM()
+                |--------------------------------------------------------------------------
+                */
+
+                else {
+
+                    rowXml +=
+                        '<c r="' +
+                        column +
+                        newRow +
+                        '"' +
+                        style +
+                        '>' +
+                        '<v>' +
+                        Number(value) +
+                        '</v>' +
+                        '</c>';
+
+                }
+
+            }
+        );
+
+
+        rowXml += '</row>';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | TAMBAHKAN GRAND TOTAL REMAINING
+        |--------------------------------------------------------------------------
+        */
+
+        $('sheetData', sheet).append(
+            rowXml
+        );
+
+    }
+        }],
 
         columnDefs: [
             {
