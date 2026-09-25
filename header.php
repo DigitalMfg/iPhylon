@@ -379,6 +379,15 @@ $scan_type = $_SESSION['scan_type'];
               </a>
             </li>
             <li class="nav-item">
+              <a href="report_minus_produksi_ip.php"
+              class="nav-link">
+                <i class="far fa-circle nav-icon"></i>
+                <p>
+                  Minus Produksi IP
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
               <a href="report_daily_scan.php"
               class="nav-link">
                 <i class="far fa-circle nav-icon"></i>
